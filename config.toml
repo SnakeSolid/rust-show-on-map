@@ -1,0 +1,23 @@
+points_for_places = """
+SELECT 1 FROM points_for_places;
+"""
+
+points_for_roads = """
+SELECT 1 FROM points_for_roads;
+"""
+
+unique_place_ids = """
+SELECT 1 FROM unique_place_ids;
+"""
+
+unique_road_ids = """
+SELECT 1 FROM unique_road_ids;
+"""
+
+names_for_places = """
+SELECT 1 FROM names_for_places;
+"""
+
+names_for_roads = """
+SELECT 1 FROM names_for_roads;
+"""
