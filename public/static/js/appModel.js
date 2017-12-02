@@ -44,8 +44,8 @@ define([
 		};
 
 		storage.addConnectionListener(function(connectionSettings) {
-			this.isShowPlacesEnabled = ko.observable(true);
-			this.isShowRoadsEnabled = ko.observable(true);
+			self.isShowPlacesEnabled(true);
+			self.isShowRoadsEnabled(true);
 		});
 	};
 });
