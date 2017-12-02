@@ -42,46 +42,7 @@
       </div>
     </div>
 
-    <div class="ui grid" data-bind="if: isConnectionVisible">
-      <div class="four wide column"></div>
-      <div class="eight wide column">
-        <div class="ui raised segment">
-          <form class="ui form">
-            <div class="fields">
-              <div class="six wide required field">
-                <label>Host Name</label>
-                <input name="host" placeholder="Host Name or IP Address" type="text">
-              </div>
-
-              <div class="four wide field">
-                <label>Port</label>
-                <input name="port" placeholder="Port Number" type="text">
-              </div>
-
-              <div class="six wide required field">
-                <label>Database name</label>
-                <input name="database" placeholder="Database Name" type="text">
-              </div>
-            </div>
-
-            <div class="fields">
-              <div class="eight wide required field">
-                <label>Role Name</label>
-                <input name="host" placeholder="Role Name" type="text">
-              </div>
-
-              <div class="eight wide required field">
-                <label>Password</label>
-                <input name="port" placeholder="Pa$$w0rd" type="password">
-              </div>
-            </div>
-
-            <button class="ui primary button" type="button" data-bind="click: saveConnection">Save connection settings</button>
-          </form>
-        </div>
-      </div>
-      <div class="four wide column"></div>
-    </div>
+    <ko-connection-settings params="visible: isConnectionVisible, callback: hideConnection"></ko-connection-settings>
   </div>
 </body>
 </html>

@@ -1,10 +1,16 @@
 "use strict";
 
-define([ "knockout", "reqwest", "openLayers", "mapModel" ], function(ko, reqwest, ol, map) {
+define([
+	"knockout",
+	"reqwest",
+	"openLayers",
+	"localStorage",
+	"mapModel",
+], function(ko, reqwest, ol, storage, map) {
 	return function() {
 		const self = this;
 
-		this.isConnectionVisible = ko.observable(false);
+		this.isConnectionVisible = ko.observable(true);
 		this.isShowPlacesVisible = ko.observable(false);
 		this.isShowRoadsVisible = ko.observable(false);
 		this.isClearShapesVisible = ko.observable(false);
@@ -33,8 +39,13 @@ define([ "knockout", "reqwest", "openLayers", "mapModel" ], function(ko, reqwest
 			self.isConnectionVisible(!oldState);
 		};
 
-		this.saveConnection = function() {
-			console.log("saved");
+		this.hideConnection = function() {
+			self.isConnectionVisible(false);
 		};
+
+		storage.addConnectionListener(function(connectionSettings) {
+			this.isShowPlacesEnabled = ko.observable(true);
+			this.isShowRoadsEnabled = ko.observable(true);
+		});
 	};
 });
