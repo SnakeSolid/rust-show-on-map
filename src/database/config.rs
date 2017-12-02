@@ -76,4 +76,28 @@ impl DatabaseConfig {
 
         Ok(toml::from_str(&content)?)
     }
+
+    pub fn points_for_places(&self) -> String {
+        self.points_for_places.clone()
+    }
+
+    pub fn points_for_roads(&self) -> String {
+        self.points_for_roads.clone()
+    }
+
+    pub fn unique_place_ids(&self) -> String {
+        self.unique_place_ids.clone()
+    }
+
+    pub fn unique_road_ids(&self) -> String {
+        self.unique_road_ids.clone()
+    }
+
+    pub fn names_for_places(&self) -> String {
+        self.names_for_places.clone()
+    }
+
+    pub fn names_for_roads(&self) -> String {
+        self.names_for_roads.clone()
+    }
 }

@@ -7,7 +7,7 @@ use database::DatabaseFactory;
 
 use super::error::BackendError;
 use super::handler::EmptyHandler;
-use super::handler::ShapeHandler;
+use super::handler::PlaceHandler;
 
 pub fn start_backend(
     factory: DatabaseFactory,
@@ -15,7 +15,7 @@ pub fn start_backend(
     bind_port: u16,
 ) -> Result<(), BackendError> {
     let mut router = Router::new();
-    router.get("/shape", ShapeHandler::new(factory), "shape");
+    router.post("/place", PlaceHandler::new(factory), "place");
     router.get("/", EmptyHandler::new(), "empty");
 
     let mut mount = Mount::new();

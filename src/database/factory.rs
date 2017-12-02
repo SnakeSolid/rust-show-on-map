@@ -13,7 +13,14 @@ impl DatabaseFactory {
         DatabaseFactory { config: Arc::new(config) }
     }
 
-    pub fn client(&self) -> DatabaseClient {
-        DatabaseClient::new(self.config.clone())
+    pub fn client(
+        &self,
+        host: &str,
+        port: i16,
+        database: &str,
+        role: &str,
+        password: &str,
+    ) -> DatabaseClient {
+        DatabaseClient::new(self.config.clone(), host, port, database, role, password)
     }
 }

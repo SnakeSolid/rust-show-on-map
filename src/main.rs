@@ -8,6 +8,7 @@ extern crate argparse;
 extern crate env_logger;
 extern crate iron;
 extern crate mount;
+extern crate postgres;
 extern crate router;
 extern crate serde_json;
 extern crate staticfile;

@@ -2,7 +2,7 @@
 mod util;
 
 mod empty;
-mod shape;
+mod place;
 
 pub use self::empty::EmptyHandler;
-pub use self::shape::ShapeHandler;
+pub use self::place::PlaceHandler;
