@@ -23,12 +23,12 @@
           Connection&hellip;
         </a>
 
-        <a class="disabled item" data-bind="css: { active: isShowPlacesVisible, disabled: isShowPlacesDisabled }">
+        <a class="item" data-bind="click: showPlaces, css: { active: isPlacesVisible, disabled: isPlacesDisabled }">
           <i class="building outline icon"></i>
           Show places&hellip;
         </a>
 
-        <a class="disabled item" data-bind="css: { active: isShowRoadsVisible, disabled: isShowRoadsDisabled }">
+        <a class="item" data-bind="css: { active: isRoadsVisible, disabled: isRoadsDisabled }">
           <i class="road icon"></i>
           Show roads&hellip;
         </a>
@@ -43,6 +43,7 @@
     </div>
 
     <ko-connection-settings params="visible: isConnectionVisible, callback: hideConnection"></ko-connection-settings>
+    <ko-places params="visible: isPlacesVisible, map: map, callback: hidePlaces"></ko-places>
   </div>
 </body>
 </html>

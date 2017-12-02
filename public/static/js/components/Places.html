@@ -1,0 +1,23 @@
+<div class="ui grid" data-bind="if: isVisible">
+  <div class="four wide column"></div>
+  <div class="eight wide column">
+    <div class="ui raised segment">
+      <form class="ui form">
+        <div class="required field" data-bind="css: { error: isPlacesInvalid }">
+          <label>Places (separated with whitespace, commas or semicolons)</label>
+          <textarea tabindex="0" rows="2" data-bind="value: places"></textarea>
+        </div>
+
+        <div class="inline field">
+          <input id="areUnique" tabindex="1" type="checkbox" data-bind="checked: areUnique">
+          <label for="areUnique">Trait as unique IDs</label>
+        </div>
+
+        <button class="ui primary button" type="button" data-bind="click: save">Show places</button>
+        <button class="ui secondary button" type="button" data-bind="click: hide">Close</button>
+        <button class="ui button" type="button" data-bind="click: clear">Clear</button>
+      </form>
+    </div>
+  </div>
+  <div class="four wide column"></div>
+</div>
