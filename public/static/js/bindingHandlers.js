@@ -37,8 +37,14 @@ define([ "knockout", "openLayers" ], function(ko, ol) {
 			const value = valueAccessor();
 			const valueUnwrapped = ko.unwrap(value);
 			const places = valueUnwrapped.deferred_add_places();
+			const clear = valueUnwrapped.clear();
 			const map = valueUnwrapped._map;
 			const vector = valueUnwrapped._vector;
+
+			if (clear) {
+				vector.clear();
+				valueUnwrapped.clear(false);
+			}
 
 			if (places.length > 0) {
 				const features = [];

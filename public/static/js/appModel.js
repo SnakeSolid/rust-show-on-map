@@ -13,10 +13,10 @@ define([
 		this.isConnectionVisible = ko.observable(false);
 		this.isPlacesVisible = ko.observable(false);
 		this.isRoadsVisible = ko.observable(false);
-		this.isClearShapesVisible = ko.observable(false);
+		this.isClearVisible = ko.observable(false);
 		this.isPlacesEnabled = ko.observable(false);
 		this.isRoadsEnabled = ko.observable(false);
-		this.isClearShapesEnabled = ko.observable(false);
+		this.isClearEnabled = ko.observable(false);
 		this.map = map.create();
 
 		this.isPlacesDisabled = ko.pureComputed(function() {
@@ -27,8 +27,8 @@ define([
 			return !this.isRoadsEnabled();
 		}, this);
 
-		this.isClearShapesDisabled = ko.pureComputed(function() {
-			return !this.isClearShapesEnabled();
+		this.isClearDisabled = ko.pureComputed(function() {
+			return !this.isClearEnabled();
 		}, this);
 
 		this.showConnection = function() {
@@ -55,6 +55,10 @@ define([
 			self.isPlacesVisible(false);
 		};
 
+		this.clearShapes = function() {
+			self.map.clearShapes();
+		};
+
 		const connectionSettings = storage.getConnectionSettings();
 
 		if (connectionSettings === null) {
@@ -62,11 +66,13 @@ define([
 		} else {
 			self.isPlacesEnabled(true);
 			self.isRoadsEnabled(true);
+			self.isClearEnabled(true);
 		}
 
 		storage.addConnectionListener(function(connectionSettings) {
 			self.isPlacesEnabled(true);
 			self.isRoadsEnabled(true);
+			self.isClearEnabled(true);
 		});
 	};
 });
