@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::error::Error;
 use std::io::Read;
 
@@ -12,6 +14,7 @@ use serde_json;
 use database::DatabaseFactory;
 use database::MapLink;
 use database::MapPlace;
+use database::MapPoint;
 
 pub struct PlaceHandler {
     factory: DatabaseFactory,
@@ -206,9 +209,85 @@ impl Into<ResponsePlace> for MapPlace {
 }
 
 fn collect_points_all(map_links: &Vec<MapLink>) -> Vec<ResponsePoint> {
-    let mut result = Vec::default();
+    let mut link_connections: HashMap<MapPoint, Vec<_>> = HashMap::default();
 
-    for map_link in map_links {
+    // Collect adjacent links of polygon.
+    for (i, map_link) in map_links.iter().enumerate() {
+        let map_points = map_link.points();
+
+        if let Some(map_point) = map_points.first() {
+            link_connections
+                .entry(map_point.clone())
+                .or_insert_with(|| Vec::default())
+                .push(i);
+        }
+
+        if let Some(map_point) = map_points.last() {
+            link_connections
+                .entry(map_point.clone())
+                .or_insert_with(|| Vec::default())
+                .push(i);
+        }
+    }
+
+    let mut used_links: HashSet<usize> = HashSet::default();
+    let mut result: Vec<ResponsePoint> = Vec::default();
+
+    let mut current_link_id = 0;
+    let current_link = &map_links[current_link_id];
+    let mut current_point: &MapPoint = current_link.points().first().unwrap();
+
+    // Loop over all links and connect adjacent links to single loop.
+    loop {
+        used_links.insert(current_link_id);
+
+        let adjacent_link_id = match link_connections
+            .get(&current_point)
+            .expect("Link connections not contain border point")
+            .iter()
+            .filter(|id| !used_links.contains(id))
+            .next() {
+            Some(link_id) => link_id.clone(),
+            None => break,
+        };
+        let adjacent_link = map_links.get(adjacent_link_id).expect(
+            "Links not contain link id",
+        );
+        let adjacent_points = adjacent_link.points();
+        let first_point = adjacent_points.first().expect("Link points is empty");
+
+        if first_point == current_point {
+            result.extend(adjacent_points.iter().map(|map_point| {
+                let point = ResponsePoint::new(
+                    map_point.lat() as f64 / 100000.0,
+                    map_point.lon() as f64 / 100000.0,
+                );
+
+                point
+            }));
+
+            current_point = adjacent_points.last().expect("Link points is empty");
+        } else {
+            result.extend(adjacent_points.iter().rev().map(|map_point| {
+                let point = ResponsePoint::new(
+                    map_point.lat() as f64 / 100000.0,
+                    map_point.lon() as f64 / 100000.0,
+                );
+
+                point
+            }));
+
+            current_point = adjacent_points.first().expect("Link points is empty");
+        }
+
+        current_link_id = adjacent_link_id;
+    }
+
+    // Collect all other links to output buffer, if polygon contains links out of loop.
+    for (_, map_link) in map_links.iter().enumerate().filter(|&(i, _)| {
+        !used_links.contains(&i)
+    })
+    {
         for map_point in map_link.points() {
             let point = ResponsePoint::new(
                 map_point.lat() as f64 / 100000.0,

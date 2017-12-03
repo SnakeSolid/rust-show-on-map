@@ -15,7 +15,7 @@ pub struct MapLink {
     points: Vec<MapPoint>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
 pub struct MapPoint {
     lat: i32,
     lon: i32,
