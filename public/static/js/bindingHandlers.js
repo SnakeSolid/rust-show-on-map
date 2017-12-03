@@ -7,9 +7,9 @@ define([
 	const KIND = "kind";
 	const KIND_PLACE = "place";
 	const KIND_ROAD = "road";
-	const STROKE_PLACE = new ol.style.Stroke({ color: [ 0, 128, 255 ], width: 3 });
+	const STROKE_PLACE = new ol.style.Stroke({ color: [ 0, 128, 255 ], width: 2 });
 	const STROKE_ROAD = new ol.style.Stroke({ color: [ 255, 0, 0 ], width: 3 });
-	const STROKE_DEFAULT = new ol.style.Stroke({ color: [ 0, 0, 0 ], width: 3 });
+	const STROKE_DEFAULT = new ol.style.Stroke({ color: [ 0, 0, 0 ], width: 2 });
 	const FILL_PLACE = new ol.style.Fill({ color: [ 0, 128, 255, 0.1 ] });
 	const FILL_DEFAULT = new ol.style.Fill({ color: [ 0, 0, 0, 0.1 ] });
 	const STYLE_PLACE = new ol.style.Style({ stroke: STROKE_PLACE, fill: FILL_PLACE });
