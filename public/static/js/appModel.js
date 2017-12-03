@@ -17,7 +17,7 @@ define([
 		this.isPlacesEnabled = ko.observable(false);
 		this.isRoadsEnabled = ko.observable(false);
 		this.isClearEnabled = ko.observable(false);
-		this.features = ko.observableArray(["test"]);
+		this.features = ko.observableArray([]);
 
 		this.featuresSelected = function(features) {
 			const featureNames = features.map(function(feature) {
