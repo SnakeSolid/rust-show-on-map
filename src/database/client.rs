@@ -52,25 +52,7 @@ impl DatabaseClient {
         let mut result = Vec::default();
 
         for (id, name) in names {
-            let place = if let Some(all_polygons) = geometry.get(&id) {
-                let mut polygons = Vec::with_capacity(all_polygons.len());
-
-                for all_links in all_polygons.values() {
-                    let mut links = Vec::with_capacity(all_links.len());
-
-                    for all_points in all_links.values() {
-                        let points = all_points.clone();
-
-                        links.push(MapLink::new(points));
-                    }
-
-                    polygons.push(MapPolygon::new(links));
-                }
-
-                MapPlace::with_name_geometry(id, name, polygons)
-            } else {
-                MapPlace::with_name(id, name)
-            };
+            let place = collect_place(id, &name, id, &geometry);
 
             result.push(place);
         }
@@ -91,37 +73,15 @@ impl DatabaseClient {
             return Err(DatabaseError::no_data());
         }
 
-        let ids: Vec<_> = unique.values().collect();
+        let ids: Vec<_> = unique.keys().collect();
         let ids_string = join(',', ids);
         let names = self.query_place_names(&connection, &ids_string)?;
         let geometry = self.query_place_geometry(&connection, &ids_string)?;
         let mut result = Vec::default();
 
         for (id, name) in names {
-            let id = match unique.get(&id) {
-                Some(unique_id) => unique_id.clone(),
-                None => id,
-            };
-
-            let place = if let Some(all_polygons) = geometry.get(&id) {
-                let mut polygons = Vec::with_capacity(all_polygons.len());
-
-                for all_links in all_polygons.values() {
-                    let mut links = Vec::with_capacity(all_links.len());
-
-                    for all_points in all_links.values() {
-                        let points = all_points.clone();
-
-                        links.push(MapLink::new(points));
-                    }
-
-                    polygons.push(MapPolygon::new(links));
-                }
-
-                MapPlace::with_name_geometry(id, name, polygons)
-            } else {
-                MapPlace::with_name(id, name)
-            };
+            let unique_id = unique.get(&id).cloned().unwrap_or(id);
+            let place = collect_place(unique_id, &name, id, &geometry);
 
             result.push(place);
         }
@@ -191,6 +151,33 @@ impl DatabaseClient {
         }
 
         Ok(result)
+    }
+}
+
+fn collect_place(
+    place_id: i32,
+    place_name: &str,
+    id: i32,
+    geometry: &HashMap<i32, HashMap<i32, HashMap<i32, Vec<MapPoint>>>>,
+) -> MapPlace {
+    if let Some(all_polygons) = geometry.get(&id) {
+        let mut polygons = Vec::with_capacity(all_polygons.len());
+
+        for all_links in all_polygons.values() {
+            let mut links = Vec::with_capacity(all_links.len());
+
+            for all_points in all_links.values() {
+                let points = all_points.clone();
+
+                links.push(MapLink::new(points));
+            }
+
+            polygons.push(MapPolygon::new(links));
+        }
+
+        MapPlace::with_name_geometry(place_id, place_name.into(), polygons)
+    } else {
+        MapPlace::with_name(place_id, place_name.into())
     }
 }
 

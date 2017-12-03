@@ -34,7 +34,6 @@ struct HandlerRequest {
 #[derive(Serialize)]
 struct HandlerResponse {
     ok: bool,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     places: Vec<ResponsePlace>,
     #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
@@ -45,7 +44,6 @@ struct ResponsePlace {
     id: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     name: Option<String>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     polygons: Vec<Vec<ResponsePoint>>,
 }
 
