@@ -17,7 +17,17 @@ define([
 		this.isPlacesEnabled = ko.observable(false);
 		this.isRoadsEnabled = ko.observable(false);
 		this.isClearEnabled = ko.observable(false);
-		this.map = map.create();
+		this.features = ko.observableArray(["test"]);
+
+		this.featuresSelected = function(features) {
+			const featureNames = features.map(function(feature) {
+				return feature.get("name");
+			});
+
+			self.features(featureNames);
+		};
+
+		this.map = map.create(this.featuresSelected);
 
 		this.isPlacesDisabled = ko.pureComputed(function() {
 			return !this.isPlacesEnabled();

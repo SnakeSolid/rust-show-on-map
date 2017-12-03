@@ -10,4 +10,9 @@ define([ "knockout" ], function(ko) {
 		viewModel: { require: "components/Places" },
 		template: { require: "text!components/Places.html" }
 	});
+
+	ko.components.register("ko-selected-names", {
+		viewModel: { require: "components/SelectedNames" },
+		template: { require: "text!components/SelectedNames.html" }
+	});
 });
