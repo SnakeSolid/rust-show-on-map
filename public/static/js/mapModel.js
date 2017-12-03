@@ -8,6 +8,10 @@ define([ "knockout", "exports" ], function(ko, exports) {
 		this.deferred_add_roads = ko.observableArray();
 		this.clear = ko.observable(false);
 
+		this.onSelected = function(a, b, c, d) {
+			console.log(a, b, c, d);
+		};
+
 		this.showPlaces = function(places) {
 			this.deferred_add_places(places);
 		};

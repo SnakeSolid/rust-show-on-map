@@ -1,19 +1,37 @@
 "use strict";
 
-define([ "knockout", "openLayers" ], function(ko, ol) {
+define([
+	"knockout",
+	"openLayers"
+], function(ko, ol) {
 	const pointToCoordinate = function(point) {
 		return ol.proj.transform([ point.lon, point.lat ], "EPSG:4326", "EPSG:3857");
 	};
+
+	const makeStyle = function(strokeColor, fillColor) {
+		const stroke = new ol.style.Stroke({
+			color: strokeColor,
+			width: 3,
+		});
+		const fill = new ol.style.Fill({
+			color: fillColor,
+		});
+		const style = new ol.style.Style({ stroke, fill });
+
+		return style;
+	}
 
 	// OpenLayers binding
 	ko.bindingHandlers.asMap = {
 		init: function(element, valueAccessor, allBindings, _, bindingContext) {
 			const value = valueAccessor();
 			const valueUnwrapped = ko.unwrap(value);
+			const onSelected = valueUnwrapped.onSelected;
 			const sourceOsm = new ol.source.OSM();
 			const layerTile = new ol.layer.Tile({ source: sourceOsm });
 			const sourceVector = new ol.source.Vector({ wrapX: false });
 			const layerVector = new ol.layer.Vector({ source: sourceVector });
+			const interactSelect = new ol.interaction.Select();
 			const controls = ol.control.defaults({
 				attribution: true,
 				zoom: true,
@@ -21,8 +39,8 @@ define([ "knockout", "openLayers" ], function(ko, ol) {
 				new ol.control.ScaleLine()
 			]);
 			const view = new ol.View({
-				center: [0, 0],
-				zoom: 3
+				center: [ -2000000.0, 5000000.0 ],
+				zoom: 4
 			});
 			const map = new ol.Map({
 				controls: controls,
@@ -30,6 +48,9 @@ define([ "knockout", "openLayers" ], function(ko, ol) {
 				target: element,
 				view: view
 			});
+
+			interactSelect.on("select", onSelected);
+			map.addInteraction(interactSelect);
 
 			valueUnwrapped._vector = sourceVector;
 			valueUnwrapped._map = map;
@@ -58,20 +79,8 @@ define([ "knockout", "openLayers" ], function(ko, ol) {
 					});
 
 					const geometry = new ol.geom.MultiPolygon(allCoordinates, "XY");
-					const style = new ol.style.Style({
-						stroke: new ol.style.Stroke({
-							color: 'blue',
-							width: 3
-						}),
-						fill: new ol.style.Fill({
-							color: 'rgba(0, 0, 255, 0.1)'
-						})
-					});
-					const feature = new ol.Feature({
-						geometry: geometry,
-						style: style,
-						name: name,
-					});
+					const style = makeStyle("rgb(0, 0, 255)", "rgba(0, 0, 255, 0.1)");
+					const feature = new ol.Feature({ geometry, style, name });
 
 					features.push(feature);
 				}
