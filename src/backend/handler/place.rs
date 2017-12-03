@@ -27,7 +27,7 @@ struct HandlerRequest {
     database: String,
     role: String,
     password: String,
-    ids: Vec<i32>,
+    ids: Vec<i64>,
     unique: bool,
 }
 
@@ -41,7 +41,7 @@ struct HandlerResponse {
 
 #[derive(Serialize)]
 struct ResponsePlace {
-    id: i32,
+    id: i64,
     #[serde(skip_serializing_if = "Option::is_none")]
     name: Option<String>,
     polygons: Vec<Vec<ResponsePoint>>,
@@ -74,7 +74,7 @@ impl HandlerRequest {
         &self.password
     }
 
-    fn ids(&self) -> &Vec<i32> {
+    fn ids(&self) -> &Vec<i64> {
         &self.ids
     }
 
@@ -116,7 +116,7 @@ impl HandlerResponse {
 }
 
 impl ResponsePlace {
-    pub fn new(id: i32, name: Option<String>, polygons: Vec<Vec<ResponsePoint>>) -> ResponsePlace {
+    pub fn new(id: i64, name: Option<String>, polygons: Vec<Vec<ResponsePoint>>) -> ResponsePlace {
         ResponsePlace { id, name, polygons }
     }
 }

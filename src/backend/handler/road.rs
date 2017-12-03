@@ -24,7 +24,7 @@ struct HandlerRequest {
     database: String,
     role: String,
     password: String,
-    ids: Vec<i32>,
+    ids: Vec<i64>,
     unique: bool,
 }
 
@@ -38,7 +38,7 @@ struct HandlerResponse {
 
 #[derive(Serialize)]
 struct ResponseRoad {
-    id: i32,
+    id: i64,
     names: Vec<String>,
     lines: Vec<Vec<ResponsePoint>>,
 }
@@ -70,7 +70,7 @@ impl HandlerRequest {
         &self.password
     }
 
-    fn ids(&self) -> &Vec<i32> {
+    fn ids(&self) -> &Vec<i64> {
         &self.ids
     }
 
@@ -92,6 +92,8 @@ impl HandlerResponse {
     where
         E: Error,
     {
+        warn!("{:?}", error);
+
         HandlerResponse {
             ok: false,
             roads: Vec::with_capacity(0),
@@ -112,7 +114,7 @@ impl HandlerResponse {
 }
 
 impl ResponseRoad {
-    pub fn new(id: i32, names: Vec<String>, lines: Vec<Vec<ResponsePoint>>) -> ResponseRoad {
+    pub fn new(id: i64, names: Vec<String>, lines: Vec<Vec<ResponsePoint>>) -> ResponseRoad {
         ResponseRoad { id, names, lines }
     }
 }

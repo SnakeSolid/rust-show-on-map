@@ -1,13 +1,13 @@
 #[derive(Debug, Clone)]
 pub struct MapPlace {
-    id: i32,
+    id: i64,
     name: String,
     polygons: Vec<MapPolygon>,
 }
 
 #[derive(Debug, Clone)]
 pub struct MapRoad {
-    id: i32,
+    id: i64,
     names: Vec<String>,
     links: Vec<MapLink>,
 }
@@ -29,7 +29,7 @@ pub struct MapPoint {
 }
 
 impl MapPlace {
-    pub fn with_name(id: i32, name: String) -> MapPlace {
+    pub fn with_name(id: i64, name: String) -> MapPlace {
         MapPlace {
             id: id,
             name: name,
@@ -37,11 +37,11 @@ impl MapPlace {
         }
     }
 
-    pub fn with_name_geometry(id: i32, name: String, polygons: Vec<MapPolygon>) -> MapPlace {
+    pub fn with_name_geometry(id: i64, name: String, polygons: Vec<MapPolygon>) -> MapPlace {
         MapPlace { id, name, polygons }
     }
 
-    pub fn id(&self) -> i32 {
+    pub fn id(&self) -> i64 {
         self.id
     }
 
@@ -55,7 +55,7 @@ impl MapPlace {
 }
 
 impl MapRoad {
-    pub fn with_names(id: i32, names: Vec<String>) -> MapRoad {
+    pub fn with_names(id: i64, names: Vec<String>) -> MapRoad {
         MapRoad {
             id: id,
             names: names,
@@ -63,11 +63,11 @@ impl MapRoad {
         }
     }
 
-    pub fn with_names_geometry(id: i32, names: Vec<String>, links: Vec<MapLink>) -> MapRoad {
+    pub fn with_names_geometry(id: i64, names: Vec<String>, links: Vec<MapLink>) -> MapRoad {
         MapRoad { id, names, links }
     }
 
-    pub fn id(&self) -> i32 {
+    pub fn id(&self) -> i64 {
         self.id
     }
 

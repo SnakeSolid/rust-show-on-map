@@ -41,7 +41,7 @@ impl DatabaseClient {
         }
     }
 
-    pub fn query_places(&self, ids: &Vec<i32>) -> Result<Vec<MapPlace>, DatabaseError> {
+    pub fn query_places(&self, ids: &Vec<i64>) -> Result<Vec<MapPlace>, DatabaseError> {
         if ids.is_empty() {
             return Err(DatabaseError::no_data());
         }
@@ -61,7 +61,7 @@ impl DatabaseClient {
         Ok(result)
     }
 
-    pub fn query_roads(&self, ids: &Vec<i32>) -> Result<Vec<MapRoad>, DatabaseError> {
+    pub fn query_roads(&self, ids: &Vec<i64>) -> Result<Vec<MapRoad>, DatabaseError> {
         if ids.is_empty() {
             return Err(DatabaseError::no_data());
         }
@@ -81,7 +81,7 @@ impl DatabaseClient {
         Ok(result)
     }
 
-    pub fn query_places_unique(&self, ids: &Vec<i32>) -> Result<Vec<MapPlace>, DatabaseError> {
+    pub fn query_places_unique(&self, ids: &Vec<i64>) -> Result<Vec<MapPlace>, DatabaseError> {
         if ids.is_empty() {
             return Err(DatabaseError::no_data());
         }
@@ -101,7 +101,7 @@ impl DatabaseClient {
         let mut result = Vec::default();
 
         for (id, name) in names {
-            let unique_id = unique.get(&id).cloned().unwrap_or(id);
+            let unique_id = unique.get(&id).map(|&id| id as i64).unwrap_or(id);
             let place = collect_place(unique_id, name, id, &geometry);
 
             result.push(place);
@@ -110,7 +110,7 @@ impl DatabaseClient {
         Ok(result)
     }
 
-    pub fn query_roads_unique(&self, ids: &Vec<i32>) -> Result<Vec<MapRoad>, DatabaseError> {
+    pub fn query_roads_unique(&self, ids: &Vec<i64>) -> Result<Vec<MapRoad>, DatabaseError> {
         if ids.is_empty() {
             return Err(DatabaseError::no_data());
         }
@@ -130,7 +130,7 @@ impl DatabaseClient {
         let mut result = Vec::default();
 
         for (id, names) in all_names {
-            let unique_id = unique.get(&id).cloned().unwrap_or(id);
+            let unique_id = unique.get(&id).map(|&id| id as i64).unwrap_or(id);
             let place = collect_road(unique_id, names, id, &geometry);
 
             result.push(place);
@@ -143,13 +143,13 @@ impl DatabaseClient {
         &self,
         connection: &Connection,
         ids: &str,
-    ) -> Result<HashMap<i32, i32>, DatabaseError> {
+    ) -> Result<HashMap<i64, i32>, DatabaseError> {
         let query = self.config.unique_place_ids();
         let rows = connection.query(&query.replace("{ids}", &ids), &[])?;
         let mut result = HashMap::default();
 
         for row in rows.into_iter() {
-            let place_id: i32 = row.get(0);
+            let place_id: i64 = row.get(0);
             let unique_id: i32 = row.get(1);
 
             result.insert(place_id, unique_id);
@@ -162,13 +162,13 @@ impl DatabaseClient {
         &self,
         connection: &Connection,
         ids: &str,
-    ) -> Result<HashMap<i32, i32>, DatabaseError> {
+    ) -> Result<HashMap<i64, i32>, DatabaseError> {
         let query = self.config.unique_road_ids();
         let rows = connection.query(&query.replace("{ids}", &ids), &[])?;
         let mut result = HashMap::default();
 
         for row in rows.into_iter() {
-            let road_id: i32 = row.get(0);
+            let road_id: i64 = row.get(0);
             let unique_id: i32 = row.get(1);
 
             result.insert(road_id, unique_id);
@@ -181,13 +181,13 @@ impl DatabaseClient {
         &self,
         connection: &Connection,
         ids: &str,
-    ) -> Result<HashMap<i32, HashMap<i32, HashMap<i32, Vec<MapPoint>>>>, DatabaseError> {
+    ) -> Result<HashMap<i64, HashMap<i32, HashMap<i32, Vec<MapPoint>>>>, DatabaseError> {
         let query = self.config.points_for_places();
         let rows = connection.query(&query.replace("{ids}", &ids), &[])?;
         let mut result = HashMap::default();
 
         for row in rows.into_iter() {
-            let place_id: i32 = row.get(0);
+            let place_id: i64 = row.get(0);
             let face_id: i32 = row.get(1);
             let link_id: i32 = row.get(2);
             let lat: i32 = row.get(3);
@@ -207,13 +207,13 @@ impl DatabaseClient {
         &self,
         connection: &Connection,
         ids: &str,
-    ) -> Result<HashMap<i32, HashMap<i32, Vec<MapPoint>>>, DatabaseError> {
+    ) -> Result<HashMap<i64, HashMap<i32, Vec<MapPoint>>>, DatabaseError> {
         let query = self.config.points_for_roads();
         let rows = connection.query(&query.replace("{ids}", &ids), &[])?;
         let mut result = HashMap::default();
 
         for row in rows.into_iter() {
-            let road_id: i32 = row.get(0);
+            let road_id: i64 = row.get(0);
             let link_id: i32 = row.get(1);
             let lat: i32 = row.get(2);
             let lon: i32 = row.get(3);
@@ -231,13 +231,13 @@ impl DatabaseClient {
         &self,
         connection: &Connection,
         ids: &str,
-    ) -> Result<HashMap<i32, String>, DatabaseError> {
+    ) -> Result<HashMap<i64, String>, DatabaseError> {
         let query = self.config.names_for_places();
         let rows = connection.query(&query.replace("{ids}", &ids), &[])?;
         let mut result = HashMap::default();
 
         for row in rows.into_iter() {
-            let place_id: i32 = row.get(0);
+            let place_id: i64 = row.get(0);
             let name: String = row.get(1);
 
             result.insert(place_id, name);
@@ -250,13 +250,13 @@ impl DatabaseClient {
         &self,
         connection: &Connection,
         ids: &str,
-    ) -> Result<HashMap<i32, Vec<String>>, DatabaseError> {
+    ) -> Result<HashMap<i64, Vec<String>>, DatabaseError> {
         let query = self.config.names_for_roads();
         let rows = connection.query(&query.replace("{ids}", &ids), &[])?;
         let mut result = HashMap::default();
 
         for row in rows.into_iter() {
-            let place_id: i32 = row.get(0);
+            let place_id: i64 = row.get(0);
             let name: String = row.get(1);
 
             result.entry(place_id).or_insert_with(|| Vec::new()).push(
@@ -269,10 +269,10 @@ impl DatabaseClient {
 }
 
 fn collect_place(
-    place_id: i32,
+    place_id: i64,
     place_name: String,
-    id: i32,
-    geometry: &HashMap<i32, HashMap<i32, HashMap<i32, Vec<MapPoint>>>>,
+    id: i64,
+    geometry: &HashMap<i64, HashMap<i32, HashMap<i32, Vec<MapPoint>>>>,
 ) -> MapPlace {
     if let Some(all_polygons) = geometry.get(&id) {
         let mut polygons = Vec::with_capacity(all_polygons.len());
@@ -296,10 +296,10 @@ fn collect_place(
 }
 
 fn collect_road(
-    road_id: i32,
+    road_id: i64,
     road_names: Vec<String>,
-    id: i32,
-    geometry: &HashMap<i32, HashMap<i32, Vec<MapPoint>>>,
+    id: i64,
+    geometry: &HashMap<i64, HashMap<i32, Vec<MapPoint>>>,
 ) -> MapRoad {
     if let Some(all_links) = geometry.get(&id) {
         let mut links = Vec::with_capacity(all_links.len());
