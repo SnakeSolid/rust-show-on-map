@@ -2,7 +2,7 @@
   <div class="four wide column"></div>
   <div class="eight wide column">
     <div class="ui raised segment">
-      <form class="ui form">
+      <form class="ui form" data-bind="css: { loading: isLoading }">
         <h3 class="ui header">Show Places by ID</h3>
 
         <div class="required field" data-bind="css: { error: isPlacesInvalid }">

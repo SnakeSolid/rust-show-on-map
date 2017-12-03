@@ -19,6 +19,7 @@ define([
 		this.places = ko.observable("");
 		this.areUnique = ko.observable(false);
 		this.isPlacesValid = ko.observable(true);
+		this.isLoading = ko.observable(false);
 
 		this.isPlacesInvalid = ko.pureComputed(function() {
 			return !this.isPlacesValid();
@@ -54,6 +55,8 @@ define([
 					unique: self.areUnique(),
 				};
 
+				this.isLoading(true);
+
 				reqwest({
 					url: "/api/v1/place",
 					method: "post",
@@ -66,11 +69,13 @@ define([
 					} else {
 						// check for error message
 					}
-				}).fail(function(err) {
-					// process error
-				});
 
-				self.callback();
+					self.isLoading(false);
+					self.callback();
+				}).fail(function(err) {
+					self.isLoading(false);
+					self.callback();
+				});
 			}
 		};
 
