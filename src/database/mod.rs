@@ -10,5 +10,6 @@ pub use self::entity::MapLink;
 pub use self::entity::MapPlace;
 pub use self::entity::MapPoint;
 pub use self::entity::MapPolygon;
+pub use self::entity::MapRoad;
 pub use self::error::DatabaseError;
 pub use self::factory::DatabaseFactory;
