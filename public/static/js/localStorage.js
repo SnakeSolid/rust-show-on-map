@@ -5,12 +5,7 @@ define([], function() {
 	let connectionListeners = [];
 
 	const setConnectionSettings = function(host, port, database, role, password) {
-		connectionSettings = {
-			host: host,
-			database,
-			role,
-			password,
-		};
+		connectionSettings = { host, port, database, role, password };
 
 		if (port) {
 			connectionSettings.port = port | 0;

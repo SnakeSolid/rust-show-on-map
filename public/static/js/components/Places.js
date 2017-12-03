@@ -1,6 +1,14 @@
 "use strict";
 
-define([ "knockout" ], function(ko) {
+define([
+	"knockout",
+	"reqwest",
+	"localStorage",
+], function(ko, reqwest, storage) {
+	const mapToInt = function(element) {
+		return parseInt(element);
+	};
+
 	return function(params) {
 		const self = this;
 
@@ -32,9 +40,35 @@ define([ "knockout" ], function(ko) {
 			return result;
 		};
 
-		this.save = function() {
-			if (self.validate()) {
-				console.log("query data and add it to the map");
+		this.show = function() {
+			const connection = storage.getConnectionSettings();
+
+			if (connection && self.validate()) {
+				const data = {
+					host: connection.host,
+					port: connection.port,
+					database: connection.database,
+					role: connection.role,
+					password: connection.password,
+					ids: self.places().split( /[ ,;]+/ ).map(mapToInt),
+					unique: self.areUnique(),
+				};
+
+				reqwest({
+					url: "/api/v1/place",
+					method: "post",
+					data: JSON.stringify(data),
+					type: "json",
+					contentType: "application/json"
+				}).then(function (resp) {
+					if (resp.ok) {
+						self.map.showPlaces(resp.places);
+					} else {
+						// check for error message
+					}
+				}).fail(function(err) {
+					// process error
+				});
 
 				self.callback();
 			}
