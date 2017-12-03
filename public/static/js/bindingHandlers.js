@@ -88,6 +88,15 @@ define([
 				vector.addFeatures(features);
 				valueUnwrapped.deferred_add_places([]);
 			}
+
+			if (vector.getFeatures().length > 0) {
+				const extent = vector.getExtent();
+				const view = map.getView();
+
+				view.fit(extent, {
+					padding: [ 30, 20, 30, 20 ],
+				});
+			}
 		}
 	};
 });
