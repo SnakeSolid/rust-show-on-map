@@ -10,7 +10,7 @@ define([
 	return function() {
 		const self = this;
 
-		this.isConnectionVisible = ko.observable(true);
+		this.isConnectionVisible = ko.observable(false);
 		this.isPlacesVisible = ko.observable(false);
 		this.isRoadsVisible = ko.observable(false);
 		this.isClearShapesVisible = ko.observable(false);
@@ -54,6 +54,15 @@ define([
 		this.hidePlaces = function() {
 			self.isPlacesVisible(false);
 		};
+
+		const connectionSettings = storage.getConnectionSettings();
+
+		if (connectionSettings === null) {
+			this.isConnectionVisible(true);
+		} else {
+			self.isPlacesEnabled(true);
+			self.isRoadsEnabled(true);
+		}
 
 		storage.addConnectionListener(function(connectionSettings) {
 			self.isPlacesEnabled(true);

@@ -1,15 +1,17 @@
 <div class="ui grid" data-bind="if: isVisible">
   <div class="four wide column"></div>
+
   <div class="eight wide column">
     <div class="ui raised segment">
       <form class="ui form">
+        <h3 class="ui header">Connection settings:</h3>
         <div class="fields">
           <div class="six wide required field" data-bind="css: { error: isHostInvalid }">
             <label>Host Name</label>
             <input name="host" placeholder="Host Name or IP Address" type="text" data-bind="value: host">
           </div>
 
-          <div class="four wide field" data-bind="css: { error: isPortInvalid }">
+          <div class="four wide required field" data-bind="css: { error: isPortInvalid }">
             <label>Port</label>
             <input name="port" placeholder="Port Number" type="text" data-bind="value: port">
           </div>
@@ -32,10 +34,46 @@
           </div>
         </div>
 
-        <button class="ui primary button" type="button" data-bind="click: save">Save settings</button>
-        <button class="ui secondary button" type="button" data-bind="click: hide">Close</button>
+        <button class="ui primary button" type="submit" data-bind="click: save">Save settings</button>
+        <button class="ui button" type="button" data-bind="click: clear">Clear</button>
+        <button class="ui button" type="button" data-bind="click: hide">Close</button>
       </form>
     </div>
+
+    <div class="ui raised segment" data-bind="visible: isRecentVisible">
+      <h3 class="ui header">Recent connections:</h3>
+      <table class="ui compact single line striped table">
+        <thead>
+          <tr>
+            <th class="one wide"></th>
+            <th class="five wide">Host</th>
+            <th class="five wide">Database</th>
+            <th class="four wide">Role</th>
+            <th class="one wide"></th>
+          </tr>
+        </thead>
+        <tbody data-bind="foreach: recent">
+          <tr>
+            <td>
+              <button class="ui compact icon button" data-bind="click: $component.saveConnection">
+                <i class="plug icon"></i>
+              </button>
+            </td>
+            <td>
+              <span data-bind="text: host">:<span data-bind="text: port">
+            </td>
+            <td data-bind="text: database"></td>
+            <td data-bind="text: role"></td>
+            <td>
+              <button class="ui compact icon button" data-bind="click: $component.editConnection">
+                <i class="edit icon"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+
   <div class="four wide column"></div>
 </div>

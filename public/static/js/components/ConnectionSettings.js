@@ -12,6 +12,7 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 		this.database = ko.observable("");
 		this.role = ko.observable("");
 		this.password = ko.observable("");
+		this.recent = ko.observableArray();
 		this.isHostValid = ko.observable(true);
 		this.isPortValid = ko.observable(true);
 		this.isDatabaseValid = ko.observable(true);
@@ -33,6 +34,19 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 			return !this.isRoleValid();
 		}, this);
 
+		this.isRecentVisible = ko.pureComputed(function() {
+			return this.recent().length > 0;
+		}, this);
+
+		this.saveConnection = function(settings, event) {
+			self.setConnectionSettings(settings);
+			self.save();
+		};
+
+		this.editConnection = function(settings, event) {
+			self.setConnectionSettings(settings);
+		};
+
 		this.validate = function() {
 			const host = self.host();
 			const port = self.port();
@@ -49,7 +63,7 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 				self.isHostValid(true);
 			}
 
-			if (port.length > 0 && !port.match( /^[0-9]+$/ )) {
+			if (port.length === 0 || !port.match( /^[0-9]+$/ )) {
 				self.isPortValid(false);
 
 				result = false;
@@ -79,7 +93,7 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 		this.save = function() {
 			if (self.validate()) {
 				const host = self.host();
-				const port = self.port() || 5432;
+				const port = self.port() | 0;
 				const database = self.database();
 				const role = self.role();
 				const password = self.password();
@@ -90,16 +104,46 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 			}
 		};
 
+		this.clear = function() {
+			self.host("");
+			self.port("");
+			self.database("");
+			self.role("");
+			self.password("");
+			self.isHostValid(true);
+			self.isPortValid(true);
+			self.isDatabaseValid(true);
+			self.isRoleValid(true);
+		};
+
 		this.hide = function() {
 			self.callback();
 		};
 
-		storage.addConnectionListener(function(connectionSettings) {
+		this.setConnectionSettings = function(connectionSettings) {
 			self.host(connectionSettings.host);
 			self.port("" + connectionSettings.port);
 			self.database(connectionSettings.database);
 			self.role(connectionSettings.role);
 			self.password(connectionSettings.password);
-		});
+		};
+
+		this.setRecentConnections = function(recentConnections) {
+			self.recent(recentConnections);
+		};
+
+		const connectionSettings = storage.getConnectionSettings();
+		const recentConnections = storage.getRecentConnections();
+
+		if (connectionSettings !== null) {
+			this.setConnectionSettings(connectionSettings);
+		}
+
+		if (recentConnections !== null) {
+			this.setRecentConnections(recentConnections);
+		}
+
+		storage.addConnectionListener(this.setConnectionSettings);
+		storage.addRecentListener(this.setRecentConnections);
 	};
 });
