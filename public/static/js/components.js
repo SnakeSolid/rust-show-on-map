@@ -11,6 +11,11 @@ define([ "knockout" ], function(ko) {
 		template: { require: "text!components/Places.html" }
 	});
 
+	ko.components.register("ko-roads", {
+		viewModel: { require: "components/Roads" },
+		template: { require: "text!components/Roads.html" }
+	});
+
 	ko.components.register("ko-selected-names", {
 		viewModel: { require: "components/SelectedNames" },
 		template: { require: "text!components/SelectedNames.html" }

@@ -44,9 +44,9 @@ define([
 		this.showConnection = function() {
 			const oldState = self.isConnectionVisible();
 
+			self.isConnectionVisible(!oldState);
 			self.isPlacesVisible(false);
 			self.isRoadsVisible(false);
-			self.isConnectionVisible(!oldState);
 		};
 
 		this.hideConnection = function() {
@@ -56,13 +56,25 @@ define([
 		this.showPlaces = function() {
 			const oldState = self.isPlacesVisible();
 
+			self.isConnectionVisible(false);
 			self.isPlacesVisible(!oldState);
 			self.isRoadsVisible(false);
-			self.isConnectionVisible(false);
 		};
 
 		this.hidePlaces = function() {
 			self.isPlacesVisible(false);
+		};
+
+		this.showRoads = function() {
+			const oldState = self.isRoadsVisible();
+
+			self.isConnectionVisible(false);
+			self.isPlacesVisible(false);
+			self.isRoadsVisible(!oldState);
+		};
+
+		this.hideRoads = function() {
+			self.isRoadsVisible(false);
 		};
 
 		this.clearShapes = function() {
