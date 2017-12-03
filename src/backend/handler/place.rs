@@ -195,11 +195,7 @@ impl Into<ResponsePlace> for MapPlace {
 
         for map_polygon in self.polygons() {
             let map_links = map_polygon.links();
-            let polygon = match map_links.len() {
-                1 => collect_points_all(map_links),
-                2 => collect_points_all(map_links),
-                _ => collect_points_all(map_links),
-            };
+            let polygon = collect_points(map_links);
 
             polygons.push(polygon);
         }
@@ -208,7 +204,7 @@ impl Into<ResponsePlace> for MapPlace {
     }
 }
 
-fn collect_points_all(map_links: &Vec<MapLink>) -> Vec<ResponsePoint> {
+fn collect_points(map_links: &Vec<MapLink>) -> Vec<ResponsePoint> {
     let mut link_connections: HashMap<MapPoint, Vec<_>> = HashMap::default();
 
     // Collect adjacent links of polygon.
