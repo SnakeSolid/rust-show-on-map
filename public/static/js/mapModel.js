@@ -19,6 +19,10 @@ define([ "knockout", "exports" ], function(ko, exports) {
 			this.deferred_add_places(places);
 		};
 
+		this.showRoads = function(roads) {
+			this.deferred_add_roads(roads);
+		};
+
 		this.clearShapes = function() {
 			self.clear(true);
 		};
