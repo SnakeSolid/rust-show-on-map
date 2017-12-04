@@ -195,9 +195,10 @@ impl Into<ResponseRoad> for MapRoad {
 
 fn collect_points(map_links: &Vec<MapLink>) -> Vec<Vec<ResponsePoint>> {
     let mut result: Vec<Vec<ResponsePoint>> = Vec::default();
-    let mut result_line = Vec::default();
 
     for map_link in map_links {
+        let mut result_line = Vec::default();
+
         for map_point in map_link.points() {
             let point = ResponsePoint::new(
                 map_point.lat() as f64 / 100000.0,
@@ -206,9 +207,9 @@ fn collect_points(map_links: &Vec<MapLink>) -> Vec<Vec<ResponsePoint>> {
 
             result_line.push(point);
         }
-    }
 
-    result.push(result_line);
+        result.push(result_line);
+    }
 
     result
 }
