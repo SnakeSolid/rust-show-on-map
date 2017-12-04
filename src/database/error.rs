@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fmt::Display;
 use std::fmt::Error as FmtError;
 use std::fmt::Formatter;
+use std::fmt::Write;
 use std::io::Error as IoError;
 
 use postgres::Error as PgError;
@@ -21,13 +22,24 @@ impl DatabaseError {
 
 impl From<PgError> for DatabaseError {
     fn from(error: PgError) -> DatabaseError {
-        DatabaseError::PostgresError { description: error.description().into() }
+        if let Some(db_error) = error.as_db() {
+            let mut description = String::default();
+            let _ = write!(description, "{} ", db_error.severity);
+            let _ = write!(description, "{} - ", db_error.code.code());
+            let _ = write!(description, "{}", db_error.message);
+
+            DatabaseError::PostgresError { description }
+        } else if let Some(error) = error.as_io() {
+            DatabaseError::PostgresError { description: error.description().into() }
+        } else {
+            DatabaseError::PostgresError { description: format!("{}", error) }
+        }
     }
 }
 
 impl From<IoError> for DatabaseError {
     fn from(error: IoError) -> DatabaseError {
-        DatabaseError::IoError { description: error.description().into() }
+        DatabaseError::IoError { description: format!("{}", error) }
     }
 }
 

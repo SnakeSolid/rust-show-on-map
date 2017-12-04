@@ -16,7 +16,7 @@ macro_rules! check_error {
         match $x {
             Ok(value) => value,
             Err(error) => {
-                warn!("Handler error: {}", error.description());
+                warn!("Handler error: {}", error);
 
                 return match serde_json::to_string(&$callback(error)) {
                     Ok(body) => Ok(Response::with(($content_type, status::Ok, body))),
@@ -32,7 +32,7 @@ macro_rules! check_server_error {
         match $x {
             Ok(value) => value,
             Err(error) => {
-                warn!("Handler error: {}", error.description());
+                warn!("Handler error: {}", error);
 
                 return Ok(Response::with(status::InternalServerError));
             }

@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::fmt::Display;
 use std::io::Read;
 
 use iron::Handler;
@@ -31,7 +31,8 @@ struct HandlerRequest {
 #[derive(Serialize)]
 struct HandlerResponse {
     ok: bool,
-    roads: Vec<ResponseRoad>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    roads: Option<Vec<ResponseRoad>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
 }
@@ -83,32 +84,19 @@ impl HandlerResponse {
     fn ok(roads: Vec<ResponseRoad>) -> HandlerResponse {
         HandlerResponse {
             ok: true,
-            roads: roads,
+            roads: Some(roads),
             message: None,
         }
     }
 
-    fn error<E>(error: E) -> HandlerResponse
+    fn error<D>(error: D) -> HandlerResponse
     where
-        E: Error,
-    {
-        warn!("{:?}", error);
-
-        HandlerResponse {
-            ok: false,
-            roads: Vec::with_capacity(0),
-            message: Some(error.description().into()),
-        }
-    }
-
-    fn message<S>(message: S) -> HandlerResponse
-    where
-        S: Into<String>,
+        D: Display,
     {
         HandlerResponse {
             ok: false,
-            roads: Vec::with_capacity(0),
-            message: Some(message.into()),
+            roads: None,
+            message: Some(format!("{}.", error)),
         }
     }
 }
@@ -150,7 +138,7 @@ impl Handler for RoadHandler {
         let response;
 
         if request.ids().is_empty() {
-            response = HandlerResponse::message("Request must contain at least one id.")
+            response = HandlerResponse::error("Request must contain at least one id")
         } else {
             let client = self.factory.client(
                 request.host(),
