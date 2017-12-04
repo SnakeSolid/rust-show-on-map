@@ -1,23 +1,55 @@
 points_for_places = """
-SELECT 1 FROM points_for_places;
+SELECT
+  places.place_id::bigint AS place_id,
+  places.face_id AS polygon_id,
+  places.link_id AS link_id,
+  places.lat AS lat,
+  places.lon AS lon
+FROM map.places AS places
+WHERE places.place_id IN ( {ids} )
+ORDER by places.place_id, places.face_id, places.seq_num ;
 """
 
 points_for_roads = """
-SELECT 1 FROM points_for_roads;
+SELECT
+  roads.road_id AS road_id,
+  roads.link_id::integer AS link_id,
+  roads.lat AS lat,
+  roads.lon AS lon
+FROM map.roads AS roads
+ORDER BY roads.road_id, roads.link_id, roads.seq_num ;
 """
 
 unique_place_ids = """
-SELECT 1 FROM unique_place_ids;
+SELECT
+  obj.object_id AS place_id,
+  obj.unique_id AS unique_id
+FROM map.objects AS obj
+WHERE obj.unique_id IN ( {ids} ) ;
 """
 
 unique_road_ids = """
-SELECT 1 FROM unique_road_ids;
+SELECT
+  obj.object_id AS road_id,
+  obj.unique_id AS unique_id
+FROM map.objects AS obj
+WHERE obj.unique_id IN ( {ids} ) ;
 """
 
 names_for_places = """
-SELECT 1 FROM names_for_places;
+SELECT
+  names.place_id::bigint AS place_id,
+  names.name AS name
+FROM map.place_names AS names
+WHERE names.place_id IN ( {ids} )
+ORDER BY names.place_id, names.is_exonym = 'N' ;
 """
 
 names_for_roads = """
-SELECT 1 FROM names_for_roads;
+SELECT
+  names.road_id AS road_id,
+  names.name AS name
+FROM map.road_name AS names
+WHERE names.road_id IN ( {ids} )
+ORDER BY names.road_id, names.name ;
 """
