@@ -19,6 +19,11 @@
         <button class="ui button" type="button" data-bind="click: clear">Clear</button>
         <button class="ui button" type="button" data-bind="click: hide">Close</button>
       </form>
+
+      <div class="ui error message" data-bind="visible: isMessageVisible">
+        <div class="header" data-bind="text: messageHeader"></div>
+        <p data-bind="text: messageText"></p>
+      </div>
     </div>
   </div>
   <div class="four wide column"></div>

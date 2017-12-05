@@ -20,9 +20,15 @@ define([
 		this.areUnique = ko.observable(false);
 		this.isRoadsValid = ko.observable(true);
 		this.isLoading = ko.observable(false);
+		this.messageHeader = ko.observable("");
+		this.messageText = ko.observable("");
 
 		this.isRoadsInvalid = ko.pureComputed(function() {
 			return !this.isRoadsValid();
+		}, this);
+
+		this.isMessageVisible = ko.pureComputed(function() {
+			return this.messageHeader().length > 0 && this.messageText().length > 0;
 		}, this);
 
 		this.validate = function() {
@@ -55,7 +61,7 @@ define([
 					unique: self.areUnique(),
 				};
 
-				this.isLoading(true);
+				self.isLoading(true);
 
 				reqwest({
 					url: "/api/v1/road",
@@ -66,12 +72,15 @@ define([
 				}).then(function (resp) {
 					if (resp.ok) {
 						self.map.showRoads(resp.roads);
+						self.messageHeader("");
+						self.messageText("");
+						self.callback();
 					} else {
-						// check for error message
+						self.messageHeader("Error occurred");
+						self.messageText(resp.message);
 					}
 
 					self.isLoading(false);
-					self.callback();
 				}).fail(function(err) {
 					self.isLoading(false);
 					self.callback();
