@@ -68,7 +68,7 @@ define([
 		};
 
 		this.showPlacesCallback = function(places) {
-			self.map.showPlaces(places);
+			self.map.showPlaces(places, self.pushMessage);
 		}
 
 		this.hidePlaces = function() {
@@ -86,7 +86,7 @@ define([
 		};
 
 		this.showRoadsCallback = function(roads) {
-			self.map.showRoads(roads);
+			self.map.showRoads(roads, self.pushMessage);
 		}
 
 		this.hideRoads = function() {
@@ -99,7 +99,9 @@ define([
 			}
 		};
 
-		this.dummyCallback = function() {};
+		this.pushMessage = function(message) {
+			self.messages.push(message);
+		};
 
 		const connectionSettings = storage.getConnectionSettings();
 

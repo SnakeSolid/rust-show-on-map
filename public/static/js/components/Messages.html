@@ -1,13 +1,13 @@
 <div class="ui grid" data-bind="visible: isVisible">
-  <div class="six wide column"></div>
-  <div class="four wide column">
+  <div class="five wide column"></div>
+  <div class="six wide column">
     <div data-bind="foreach: messages">
-      <div class="ui warning message">
+      <div class="ui message" data-bind="css: { warning: isWarning, error: isError }">
         <i class="close icon" data-bind="click: $component.clearCallback"></i>
         <div class="header" data-bind="visible: isHeaderVisible, text: header"></div>
         <p data-bind="text: message"></p>
       </div>
     </div>
   </div>
-  <div class="six wide column"></div>
+  <div class="five wide column"></div>
 </div>
