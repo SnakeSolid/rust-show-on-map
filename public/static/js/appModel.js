@@ -5,8 +5,9 @@ define([
 	"reqwest",
 	"openLayers",
 	"localStorage",
+	"messageModel",
 	"mapModel",
-], function(ko, reqwest, ol, storage, map) {
+], function(ko, reqwest, ol, storage, message, map) {
 	return function() {
 		const self = this;
 
@@ -17,7 +18,12 @@ define([
 		this.isPlacesEnabled = ko.observable(false);
 		this.isRoadsEnabled = ko.observable(false);
 		this.isClearEnabled = ko.observable(false);
-		this.features = ko.observableArray([]);
+		this.features = ko.observableArray();
+		this.messages = ko.observableArray();
+
+		this.clearMessages = function() {
+			self.messages([]);
+		};
 
 		this.featuresSelected = function(features) {
 			const featureNames = features.map(function(feature) {

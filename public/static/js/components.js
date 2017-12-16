@@ -20,4 +20,9 @@ define([ "knockout" ], function(ko) {
 		viewModel: { require: "components/SelectedNames" },
 		template: { require: "text!components/SelectedNames.html" }
 	});
+
+	ko.components.register("ko-messages", {
+		viewModel: { require: "components/Messages" },
+		template: { require: "text!components/Messages.html" }
+	});
 });
