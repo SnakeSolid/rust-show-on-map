@@ -42,9 +42,9 @@
       </div>
     </div>
 
-    <ko-connection-settings params="visible: isConnectionVisible, callback: hideConnection"></ko-connection-settings>
-    <ko-places params="visible: isPlacesVisible, map: map, callback: hidePlaces"></ko-places>
-    <ko-roads params="visible: isRoadsVisible, map: map, callback: hideRoads"></ko-roads>
+    <ko-connection-settings params="callback: hideConnection" data-bind="visible: isConnectionVisible"></ko-connection-settings>
+    <ko-places params="map: map, callback: hidePlaces" data-bind="visible: isPlacesVisible"></ko-places>
+    <ko-roads params="map: map, callback: hideRoads" data-bind="visible: isRoadsVisible"></ko-roads>
     <ko-selected-names params="names: features"></ko-selected-names>
   </div>
 </body>

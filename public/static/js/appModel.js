@@ -54,11 +54,13 @@ define([
 		};
 
 		this.showPlaces = function() {
-			const oldState = self.isPlacesVisible();
+			if (self.isPlacesEnabled()) {
+				const oldState = self.isPlacesVisible();
 
-			self.isConnectionVisible(false);
-			self.isPlacesVisible(!oldState);
-			self.isRoadsVisible(false);
+				self.isConnectionVisible(false);
+				self.isPlacesVisible(!oldState);
+				self.isRoadsVisible(false);
+			}
 		};
 
 		this.hidePlaces = function() {
@@ -66,11 +68,13 @@ define([
 		};
 
 		this.showRoads = function() {
-			const oldState = self.isRoadsVisible();
+			if (self.isRoadsEnabled()) {
+				const oldState = self.isRoadsVisible();
 
-			self.isConnectionVisible(false);
-			self.isPlacesVisible(false);
-			self.isRoadsVisible(!oldState);
+				self.isConnectionVisible(false);
+				self.isPlacesVisible(false);
+				self.isRoadsVisible(!oldState);
+			}
 		};
 
 		this.hideRoads = function() {
@@ -78,7 +82,9 @@ define([
 		};
 
 		this.clearShapes = function() {
-			self.map.clearShapes();
+			if (self.isClearEnabled()) {
+				self.map.clearShapes();
+			}
 		};
 
 		const connectionSettings = storage.getConnectionSettings();

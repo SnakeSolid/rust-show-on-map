@@ -4,7 +4,6 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 	return function(params) {
 		const self = this;
 
-		this.isVisible = params.visible;
 		this.callback = params.callback;
 
 		this.host = ko.observable("");

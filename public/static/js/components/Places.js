@@ -12,7 +12,6 @@ define([
 	return function(params) {
 		const self = this;
 
-		this.isVisible = params.visible;
 		this.map = params.map;
 		this.callback = params.callback;
 
