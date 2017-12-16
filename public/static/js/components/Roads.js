@@ -3,8 +3,9 @@
 define([
 	"knockout",
 	"reqwest",
+	"messageModel",
 	"localStorage",
-], function(ko, reqwest, storage) {
+], function(ko, reqwest, message, storage) {
 	const mapToInt = function(element) {
 		return parseInt(element);
 	};
@@ -14,20 +15,15 @@ define([
 
 		this.showCallback = params.showCallback;
 		this.closeCallback = params.closeCallback;
+		this.messageCallback = params.messageCallback;
 
 		this.roads = ko.observable("");
 		this.areUnique = ko.observable(false);
 		this.isRoadsValid = ko.observable(true);
 		this.isLoading = ko.observable(false);
-		this.messageHeader = ko.observable("");
-		this.messageText = ko.observable("");
 
 		this.isRoadsInvalid = ko.pureComputed(function() {
 			return !this.isRoadsValid();
-		}, this);
-
-		this.isMessageVisible = ko.pureComputed(function() {
-			return this.messageHeader().length > 0 && this.messageText().length > 0;
 		}, this);
 
 		this.validate = function() {
@@ -46,21 +42,51 @@ define([
 			return result;
 		};
 
+		this.processResponce = function(responce, expectedIds) {
+			if (responce.ok) {
+				const actualIds = {};
+
+				for (const road of responce.roads) {
+					const id = road.id;
+
+					actualIds[id] = true;
+				}
+
+				for (const id of expectedIds) {
+					if (!(id in actualIds)) {
+						self.messageCallback(message.warn("Road with id " + id + " was not found."));
+					}
+				}
+
+				self.showCallback(responce.roads);
+				self.closeCallback();
+			} else {
+				this.messageCallback(message.error(responce.message, "Error occurred"));
+			}
+
+			self.isLoading(false);
+		};
+
+		this.processFail = function() {
+			self.closeCallback();
+			self.isLoading(false);
+		};
+
 		this.show = function() {
 			const connection = storage.getConnectionSettings();
 
 			if (connection && self.validate()) {
+				const ids = self.roads().split( /[ ,;]+/ ).map(mapToInt);
 				const data = {
 					host: connection.host,
 					port: connection.port,
 					database: connection.database,
 					role: connection.role,
 					password: connection.password,
-					ids: self.roads().split( /[ ,;]+/ ).map(mapToInt),
+					ids: ids,
 					unique: self.areUnique(),
 				};
 
-				self.isLoading(true);
 
 				reqwest({
 					url: "/api/v1/road",
@@ -68,23 +94,11 @@ define([
 					data: JSON.stringify(data),
 					type: "json",
 					contentType: "application/json"
-				}).then(function (resp) {
-					if (resp.ok) {
-						self.messageHeader("");
-						self.messageText("");
+				}).then(function(responce) {
+					self.processResponce(responce, ids);
+				}).fail(self.processFail);
 
-						self.showCallback(resp.roads);
-						self.closeCallback();
-					} else {
-						self.messageHeader("Error occurred");
-						self.messageText(resp.message);
-					}
-
-					self.isLoading(false);
-				}).fail(function(err) {
-					self.isLoading(false);
-					self.closeCallback();
-				});
+				self.isLoading(true);
 			}
 		};
 
