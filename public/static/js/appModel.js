@@ -2,12 +2,10 @@
 
 define([
 	"knockout",
-	"reqwest",
-	"openLayers",
 	"localStorage",
 	"messageModel",
 	"mapModel",
-], function(ko, reqwest, ol, storage, message, map) {
+], function(ko, storage, message, map) {
 	return function() {
 		const self = this;
 
@@ -69,6 +67,10 @@ define([
 			}
 		};
 
+		this.showPlacesCallback = function(places) {
+			self.map.showPlaces(places);
+		}
+
 		this.hidePlaces = function() {
 			self.isPlacesVisible(false);
 		};
@@ -83,6 +85,10 @@ define([
 			}
 		};
 
+		this.showRoadsCallback = function(roads) {
+			self.map.showRoads(roads);
+		}
+
 		this.hideRoads = function() {
 			self.isRoadsVisible(false);
 		};
@@ -92,6 +98,8 @@ define([
 				self.map.clearShapes();
 			}
 		};
+
+		this.dummyCallback = function() {};
 
 		const connectionSettings = storage.getConnectionSettings();
 

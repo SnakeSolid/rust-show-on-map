@@ -4,7 +4,8 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 	return function(params) {
 		const self = this;
 
-		this.callback = params.callback;
+		this.saveCallback = params.saveCallback;
+		this.closeCallback = params.closeCallback;
 
 		this.host = ko.observable("");
 		this.port = ko.observable("");
@@ -99,7 +100,7 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 
 				storage.setConnectionSettings(host, port, database, role, password);
 
-				self.callback();
+				self.saveCallback();
 			}
 		};
 
@@ -116,7 +117,7 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 		};
 
 		this.hide = function() {
-			self.callback();
+			self.closeCallback();
 		};
 
 		this.setConnectionSettings = function(connectionSettings) {

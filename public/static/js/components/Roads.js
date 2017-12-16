@@ -12,8 +12,8 @@ define([
 	return function(params) {
 		const self = this;
 
-		this.map = params.map;
-		this.callback = params.callback;
+		this.showCallback = params.showCallback;
+		this.closeCallback = params.closeCallback;
 
 		this.roads = ko.observable("");
 		this.areUnique = ko.observable(false);
@@ -70,10 +70,11 @@ define([
 					contentType: "application/json"
 				}).then(function (resp) {
 					if (resp.ok) {
-						self.map.showRoads(resp.roads);
 						self.messageHeader("");
 						self.messageText("");
-						self.callback();
+
+						self.showCallback(resp.roads);
+						self.closeCallback();
 					} else {
 						self.messageHeader("Error occurred");
 						self.messageText(resp.message);
@@ -82,13 +83,13 @@ define([
 					self.isLoading(false);
 				}).fail(function(err) {
 					self.isLoading(false);
-					self.callback();
+					self.closeCallback();
 				});
 			}
 		};
 
 		this.hide = function() {
-			self.callback();
+			self.closeCallback();
 		};
 
 		this.clear = function() {
