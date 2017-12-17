@@ -1,9 +1,13 @@
 <div class="ui grid" data-bind="visible: isVisible">
-  <div class="six wide column"></div>
-  <div class="four wide column">
-    <div class="ui raised blue segment" data-bind="foreach: names">
-      <p data-bind="text: $data"></p>
+  <div class="five wide column"></div>
+  <div class="six wide column">
+    <div class="ui info message"">
+      <div class="header">Selected objects</div>
+
+      <ul data-bind="foreach: names">
+        <li data-bind="text: $data"></li>
+      </ul>
     </div>
   </div>
-  <div class="six wide column"></div>
+  <div class="five wide column"></div>
 </div>
