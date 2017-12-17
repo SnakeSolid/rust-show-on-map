@@ -9,6 +9,7 @@ define([
 		const self = this;
 
 		this.selectionHandler = selectionHandler;
+		this.isTilesVisible = ko.observable(true);
 		this.deferred_add_places = ko.observableArray();
 		this.deferred_add_roads = ko.observableArray();
 		this.clear = ko.observable(false);
@@ -17,6 +18,10 @@ define([
 			if (self.selectionHandler !== null) {
 				self.selectionHandler(event.selected);
 			}
+		};
+
+		this.tilesToggleCallback = function(event) {
+			self.isTilesVisible(!self.isTilesVisible());
 		};
 
 		this.showPlaces = function(places, messageCallback) {

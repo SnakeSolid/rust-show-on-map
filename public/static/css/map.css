@@ -3,3 +3,8 @@
 	position: fixed;
 	width: 100vw;
 }
+
+.toggle-world-map {
+  top: 5.0em;
+  left: 0.5em;
+}

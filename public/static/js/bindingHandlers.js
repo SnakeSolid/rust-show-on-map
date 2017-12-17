@@ -32,6 +32,20 @@ define([
 		}
 	}
 
+	const createToggleControl = function(callback) {
+		const button = document.createElement("button");
+		button.title = "Toggle world map";
+		button.innerHTML = "W";
+		button.addEventListener("click", callback, false);
+		button.addEventListener("touchstart", callback, false);
+
+		const element = document.createElement("div");
+		element.className = "toggle-world-map ol-unselectable ol-control";
+		element.appendChild(button);
+
+		return new ol.control.Control({ element: element });
+	};
+
 	// OpenLayers binding
 	ko.bindingHandlers.asMap = {
 		init: function(element, valueAccessor, allBindings, _, bindingContext) {
@@ -47,7 +61,8 @@ define([
 				attribution: true,
 				zoom: true,
 			}).extend([
-				new ol.control.ScaleLine()
+				new ol.control.ScaleLine(),
+				createToggleControl(valueUnwrapped.tilesToggleCallback),
 			]);
 			const view = new ol.View({
 				center: [ -2000000.0, 5000000.0 ],
@@ -63,16 +78,22 @@ define([
 			interactSelect.on("select", onSelected);
 			map.addInteraction(interactSelect);
 
+			valueUnwrapped._tileLayer = layerTile;
 			valueUnwrapped._vector = sourceVector;
 			valueUnwrapped._map = map;
 		}, update: function(element, valueAccessor, allBindings) {
 			const value = valueAccessor();
 			const valueUnwrapped = ko.unwrap(value);
+			const tileVisible = valueUnwrapped.isTilesVisible();
 			const places = valueUnwrapped.deferred_add_places();
 			const roads = valueUnwrapped.deferred_add_roads();
 			const clear = valueUnwrapped.clear();
 			const map = valueUnwrapped._map;
 			const vector = valueUnwrapped._vector;
+
+			if (valueUnwrapped._tileLayer.getVisible() !== tileVisible) {
+				valueUnwrapped._tileLayer.setVisible(tileVisible);
+			}
 
 			if (clear) {
 				vector.clear();
