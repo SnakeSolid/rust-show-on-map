@@ -15,6 +15,7 @@ extern crate staticfile;
 extern crate time;
 extern crate toml;
 
+mod algorithm;
 mod backend;
 mod database;
 mod logger;

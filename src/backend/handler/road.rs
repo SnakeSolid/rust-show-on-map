@@ -9,8 +9,10 @@ use iron::Response;
 use iron::status;
 use serde_json;
 
+use algorithm::collect_lines;
+
 use database::DatabaseFactory;
-use database::MapLink;
+use database::MapPoint;
 use database::MapRoad;
 
 pub struct RoadHandler {
@@ -119,6 +121,12 @@ impl RoadHandler {
     }
 }
 
+impl From<MapPoint> for ResponsePoint {
+    fn from(point: MapPoint) -> Self {
+        ResponsePoint::new(point.lat() as f64 / 100000.0, point.lon() as f64 / 100000.0)
+    }
+}
+
 impl Handler for RoadHandler {
     fn handle(&self, request: &mut Request) -> IronResult<Response> {
         let content_type: Mime = check_text!("application/json".parse(), "MIME type parsing error");
@@ -175,29 +183,11 @@ impl Into<ResponseRoad> for MapRoad {
     fn into(self) -> ResponseRoad {
         let id = self.id();
         let names = self.names().clone();
-        let lines = collect_points(self.links());
+        let lines = collect_lines(self.links())
+            .into_iter()
+            .map(|line| line.into_iter().map(|point| point.into()).collect())
+            .collect();
 
         ResponseRoad::new(id, names, lines)
     }
-}
-
-fn collect_points(map_links: &Vec<MapLink>) -> Vec<Vec<ResponsePoint>> {
-    let mut result: Vec<Vec<ResponsePoint>> = Vec::default();
-
-    for map_link in map_links {
-        let mut result_line = Vec::default();
-
-        for map_point in map_link.points() {
-            let point = ResponsePoint::new(
-                map_point.lat() as f64 / 100000.0,
-                map_point.lon() as f64 / 100000.0,
-            );
-
-            result_line.push(point);
-        }
-
-        result.push(result_line);
-    }
-
-    result
 }
