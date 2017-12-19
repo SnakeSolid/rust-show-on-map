@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::fmt::Display;
 use std::io::Read;
 
@@ -11,8 +9,9 @@ use iron::Response;
 use iron::status;
 use serde_json;
 
+use algorithm::collect_polygon;
+
 use database::DatabaseFactory;
-use database::MapLink;
 use database::MapPlace;
 use database::MapPoint;
 
@@ -43,8 +42,7 @@ struct HandlerResponse {
 #[derive(Serialize)]
 struct ResponsePlace {
     id: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    name: Option<String>,
+    name: String,
     polygons: Vec<Vec<ResponsePoint>>,
 }
 
@@ -106,7 +104,7 @@ impl HandlerResponse {
 }
 
 impl ResponsePlace {
-    pub fn new(id: i64, name: Option<String>, polygons: Vec<Vec<ResponsePoint>>) -> ResponsePlace {
+    pub fn new(id: i64, name: String, polygons: Vec<Vec<ResponsePoint>>) -> ResponsePlace {
         ResponsePlace { id, name, polygons }
     }
 }
@@ -120,6 +118,12 @@ impl ResponsePoint {
 impl PlaceHandler {
     pub fn new(factory: DatabaseFactory) -> PlaceHandler {
         PlaceHandler { factory: factory }
+    }
+}
+
+impl From<MapPoint> for ResponsePoint {
+    fn from(point: MapPoint) -> Self {
+        ResponsePoint::new(point.lat() as f64 / 100000.0, point.lon() as f64 / 100000.0)
     }
 }
 
@@ -179,108 +183,15 @@ impl Into<ResponsePlace> for MapPlace {
     fn into(self) -> ResponsePlace {
         let id = self.id();
         let name = self.name().clone();
-        let mut polygons = Vec::default();
-
-        for map_polygon in self.polygons() {
-            let map_links = map_polygon.links();
-            let polygon = collect_points(map_links);
-
-            polygons.push(polygon);
-        }
-
-        ResponsePlace::new(id, Some(name), polygons)
-    }
-}
-
-fn collect_points(map_links: &Vec<MapLink>) -> Vec<ResponsePoint> {
-    let mut link_connections: HashMap<MapPoint, Vec<_>> = HashMap::default();
-
-    // Collect adjacent links of polygon.
-    for (i, map_link) in map_links.iter().enumerate() {
-        let map_points = map_link.points();
-
-        if let Some(map_point) = map_points.first() {
-            link_connections
-                .entry(map_point.clone())
-                .or_insert_with(|| Vec::default())
-                .push(i);
-        }
-
-        if let Some(map_point) = map_points.last() {
-            link_connections
-                .entry(map_point.clone())
-                .or_insert_with(|| Vec::default())
-                .push(i);
-        }
-    }
-
-    let mut used_links: HashSet<usize> = HashSet::default();
-    let mut result: Vec<ResponsePoint> = Vec::default();
-
-    let mut current_link_id = 0;
-    let current_link = &map_links[current_link_id];
-    let mut current_point: &MapPoint = current_link.points().first().unwrap();
-
-    // Loop over all links and connect adjacent links to single loop.
-    loop {
-        used_links.insert(current_link_id);
-
-        let adjacent_link_id = match link_connections
-            .get(&current_point)
-            .expect("Link connections not contain border point")
+        let polygons = self.polygons()
             .iter()
-            .filter(|id| !used_links.contains(id))
-            .next() {
-            Some(link_id) => link_id.clone(),
-            None => break,
-        };
-        let adjacent_link = map_links.get(adjacent_link_id).expect(
-            "Links not contain link id",
-        );
-        let adjacent_points = adjacent_link.points();
-        let first_point = adjacent_points.first().expect("Link points is empty");
+            .map(|polygon| collect_polygon(polygon.links()))
+            .filter_map(|links| links)
+            .map(|links| {
+                links.into_iter().map(|point| point.into()).collect()
+            })
+            .collect();
 
-        if first_point == current_point {
-            result.extend(adjacent_points.iter().map(|map_point| {
-                let point = ResponsePoint::new(
-                    map_point.lat() as f64 / 100000.0,
-                    map_point.lon() as f64 / 100000.0,
-                );
-
-                point
-            }));
-
-            current_point = adjacent_points.last().expect("Link points is empty");
-        } else {
-            result.extend(adjacent_points.iter().rev().map(|map_point| {
-                let point = ResponsePoint::new(
-                    map_point.lat() as f64 / 100000.0,
-                    map_point.lon() as f64 / 100000.0,
-                );
-
-                point
-            }));
-
-            current_point = adjacent_points.first().expect("Link points is empty");
-        }
-
-        current_link_id = adjacent_link_id;
+        ResponsePlace::new(id, name, polygons)
     }
-
-    // Collect all other links to output buffer, if polygon contains links out of loop.
-    for (_, map_link) in map_links.iter().enumerate().filter(|&(i, _)| {
-        !used_links.contains(&i)
-    })
-    {
-        for map_point in map_link.points() {
-            let point = ResponsePoint::new(
-                map_point.lat() as f64 / 100000.0,
-                map_point.lon() as f64 / 100000.0,
-            );
-
-            result.push(point);
-        }
-    }
-
-    result
 }
