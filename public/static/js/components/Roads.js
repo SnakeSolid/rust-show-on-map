@@ -76,7 +76,7 @@ define([
 			const connection = storage.getConnectionSettings();
 
 			if (connection && self.validate()) {
-				const ids = self.roads().split( /[ ,;]+/ ).map(mapToInt);
+				const ids = self.roads().trim().split( /[ ,;]+/ ).map(mapToInt);
 				const data = {
 					host: connection.host,
 					port: connection.port,
