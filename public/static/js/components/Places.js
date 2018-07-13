@@ -5,11 +5,8 @@ define([
 	"reqwest",
 	"messageModel",
 	"localStorage",
-], function(ko, reqwest, message, storage) {
-	const mapToInt = function(element) {
-		return parseInt(element);
-	};
-
+	"integerParser",
+], function(ko, reqwest, message, storage, parser) {
 	return function(params) {
 		const self = this;
 
@@ -27,19 +24,11 @@ define([
 		}, this);
 
 		this.validate = function() {
-			const places = self.places();
-			let result = true;
+			const valid = parser.validate(self.places());
 
-			// not empty, not white space and contains only separators and digits.
-			if (places.length === 0 || places.match( /^\s+$/ ) || !places.match( /^[\s,;0-9]+$/ )) {
-				self.isPlacesValid(false);
+			self.isPlacesValid(valid);
 
-				result = false;
-			} else {
-				self.isPlacesValid(true);
-			}
-
-			return result;
+			return valid;
 		};
 
 		this.processResponce = function(responce, expectedIds) {
@@ -76,7 +65,7 @@ define([
 			const connection = storage.getConnectionSettings();
 
 			if (connection && self.validate()) {
-				const ids = self.places().trim().split( /[ ,;]+/ ).map(mapToInt);
+				const ids = parser.parse(self.places());
 				const data = {
 					host: connection.host,
 					port: connection.port,

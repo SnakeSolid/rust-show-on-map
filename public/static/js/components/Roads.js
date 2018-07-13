@@ -5,11 +5,8 @@ define([
 	"reqwest",
 	"messageModel",
 	"localStorage",
-], function(ko, reqwest, message, storage) {
-	const mapToInt = function(element) {
-		return parseInt(element);
-	};
-
+	"integerParser",
+], function(ko, reqwest, message, storage, parser) {
 	return function(params) {
 		const self = this;
 
@@ -27,19 +24,11 @@ define([
 		}, this);
 
 		this.validate = function() {
-			const roads = self.roads();
-			let result = true;
+			const valid = parser.validate(self.roads());
 
-			// not empty, not white space and contains only separators and digits.
-			if (roads.length === 0 || roads.match( /^\s+$/ ) || !roads.match( /^[\s,;0-9]+$/ )) {
-				self.isRoadsValid(false);
+			self.isRoadsValid(valid);
 
-				result = false;
-			} else {
-				self.isRoadsValid(true);
-			}
-
-			return result;
+			return valid;
 		};
 
 		this.processResponce = function(responce, expectedIds) {
@@ -76,7 +65,7 @@ define([
 			const connection = storage.getConnectionSettings();
 
 			if (connection && self.validate()) {
-				const ids = self.roads().trim().split( /[ ,;]+/ ).map(mapToInt);
+				const ids = parser.parse(self.roads());
 				const data = {
 					host: connection.host,
 					port: connection.port,
@@ -86,7 +75,6 @@ define([
 					ids: ids,
 					unique: self.areUnique(),
 				};
-
 
 				reqwest({
 					url: "/api/v1/road",
