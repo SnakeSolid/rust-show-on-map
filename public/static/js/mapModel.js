@@ -1,10 +1,6 @@
 "use strict";
 
-define([
-	"knockout",
-	"exports",
-	"messageModel",
-], function(ko, exports, message) {
+define(["knockout", "exports", "messageModel"], function(ko, exports, message) {
 	const MapModel = function(selectionHandler) {
 		const self = this;
 

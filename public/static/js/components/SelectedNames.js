@@ -1,6 +1,6 @@
 "use strict";
 
-define([ "knockout" ], function(ko) {
+define(["knockout"], function(ko) {
 	return function(params) {
 		this.names = params.names;
 

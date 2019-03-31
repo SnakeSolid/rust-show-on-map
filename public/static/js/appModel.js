@@ -1,11 +1,6 @@
 "use strict";
 
-define([
-	"knockout",
-	"localStorage",
-	"messageModel",
-	"mapModel",
-], function(ko, storage, message, map) {
+define(["knockout", "localStorage", "messageModel", "mapModel"], function(ko, storage, message, map) {
 	return function() {
 		const self = this;
 
@@ -69,7 +64,7 @@ define([
 
 		this.showPlacesCallback = function(places) {
 			self.map.showPlaces(places, self.pushMessage);
-		}
+		};
 
 		this.hidePlaces = function() {
 			self.isPlacesVisible(false);
@@ -87,7 +82,7 @@ define([
 
 		this.showRoadsCallback = function(roads) {
 			self.map.showRoads(roads, self.pushMessage);
-		}
+		};
 
 		this.hideRoads = function() {
 			self.isRoadsVisible(false);

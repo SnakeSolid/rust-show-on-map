@@ -1,12 +1,12 @@
 "use strict";
 
-define([
-	"knockout",
-	"reqwest",
-	"messageModel",
-	"localStorage",
-	"integerParser",
-], function(ko, reqwest, message, storage, parser) {
+define(["knockout", "reqwest", "messageModel", "localStorage", "integerParser"], function(
+	ko,
+	reqwest,
+	message,
+	storage,
+	parser
+) {
 	return function(params) {
 		const self = this;
 
@@ -81,10 +81,12 @@ define([
 					method: "post",
 					data: JSON.stringify(data),
 					type: "json",
-					contentType: "application/json"
-				}).then(function(responce) {
-					self.processResponce(responce, ids);
-				}).fail(self.processFail);
+					contentType: "application/json",
+				})
+					.then(function(responce) {
+						self.processResponce(responce, ids);
+					})
+					.fail(self.processFail);
 
 				self.isLoading(true);
 			}

@@ -1,23 +1,20 @@
 "use strict";
 
-define([
-	"knockout",
-	"openLayers"
-], function(ko, ol) {
+define(["knockout", "openLayers"], function(ko, ol) {
 	const KIND = "kind";
 	const KIND_PLACE = "place";
 	const KIND_ROAD = "road";
-	const STROKE_PLACE = new ol.style.Stroke({ color: [ 0, 128, 255 ], width: 2 });
-	const STROKE_ROAD = new ol.style.Stroke({ color: [ 255, 0, 0 ], width: 3 });
-	const STROKE_DEFAULT = new ol.style.Stroke({ color: [ 0, 0, 0 ], width: 2 });
-	const FILL_PLACE = new ol.style.Fill({ color: [ 0, 128, 255, 0.1 ] });
-	const FILL_DEFAULT = new ol.style.Fill({ color: [ 0, 0, 0, 0.1 ] });
+	const STROKE_PLACE = new ol.style.Stroke({ color: [0, 128, 255], width: 2 });
+	const STROKE_ROAD = new ol.style.Stroke({ color: [255, 0, 0], width: 3 });
+	const STROKE_DEFAULT = new ol.style.Stroke({ color: [0, 0, 0], width: 2 });
+	const FILL_PLACE = new ol.style.Fill({ color: [0, 128, 255, 0.1] });
+	const FILL_DEFAULT = new ol.style.Fill({ color: [0, 0, 0, 0.1] });
 	const STYLE_PLACE = new ol.style.Style({ stroke: STROKE_PLACE, fill: FILL_PLACE });
 	const STYLE_ROAD = new ol.style.Style({ stroke: STROKE_ROAD });
 	const STYLE_DEFAULT = new ol.style.Style({ stroke: STROKE_DEFAULT, fill: FILL_DEFAULT });
 
 	const pointToCoordinate = function(point) {
-		return ol.proj.transform([ point.lon, point.lat ], "EPSG:4326", "EPSG:3857");
+		return ol.proj.transform([point.lon, point.lat], "EPSG:4326", "EPSG:3857");
 	};
 
 	const getFeatureStyle = function(feature) {
@@ -27,10 +24,10 @@ define([
 			return STYLE_PLACE;
 		} else if (kind === KIND_ROAD) {
 			return STYLE_ROAD;
-		}else {
+		} else {
 			return STYLE_DEFAULT;
 		}
-	}
+	};
 
 	const createToggleControl = function(callback) {
 		const button = document.createElement("button");
@@ -57,22 +54,21 @@ define([
 			const sourceVector = new ol.source.Vector({ wrapX: false });
 			const layerVector = new ol.layer.Vector({ source: sourceVector, style: getFeatureStyle });
 			const interactSelect = new ol.interaction.Select();
-			const controls = ol.control.defaults({
-				attribution: true,
-				zoom: true,
-			}).extend([
-				new ol.control.ScaleLine(),
-				createToggleControl(valueUnwrapped.tilesToggleCallback),
-			]);
+			const controls = ol.control
+				.defaults({
+					attribution: true,
+					zoom: true,
+				})
+				.extend([new ol.control.ScaleLine(), createToggleControl(valueUnwrapped.tilesToggleCallback)]);
 			const view = new ol.View({
-				center: [ -2000000.0, 5000000.0 ],
-				zoom: 4
+				center: [-2000000.0, 5000000.0],
+				zoom: 4,
 			});
 			const map = new ol.Map({
 				controls: controls,
-				layers: [ layerTile, layerVector ],
+				layers: [layerTile, layerVector],
 				target: element,
-				view: view
+				view: view,
 			});
 
 			interactSelect.on("select", onSelected);
@@ -81,7 +77,8 @@ define([
 			valueUnwrapped._tileLayer = layerTile;
 			valueUnwrapped._vector = sourceVector;
 			valueUnwrapped._map = map;
-		}, update: function(element, valueAccessor, allBindings) {
+		},
+		update: function(element, valueAccessor, allBindings) {
 			const value = valueAccessor();
 			const valueUnwrapped = ko.unwrap(value);
 			const tileVisible = valueUnwrapped.isTilesVisible();
@@ -108,7 +105,7 @@ define([
 					const allCoordinates = [];
 
 					place.polygons.forEach(function(polygon) {
-						allCoordinates.push([ polygon.map(pointToCoordinate) ]);
+						allCoordinates.push([polygon.map(pointToCoordinate)]);
 					});
 
 					const geometry = new ol.geom.MultiPolygon(allCoordinates, "XY");
@@ -149,9 +146,9 @@ define([
 				const view = map.getView();
 
 				view.fit(extent, {
-					padding: [ 30, 20, 30, 20 ],
+					padding: [30, 20, 30, 20],
 				});
 			}
-		}
+		},
 	};
 });

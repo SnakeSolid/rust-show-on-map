@@ -1,6 +1,6 @@
 "use strict";
 
-define([ "knockout" ], function(ko) {
+define(["knockout"], function(ko) {
 	return function(params) {
 		this.messages = params.messages;
 		this.clearCallback = params.clearCallback;

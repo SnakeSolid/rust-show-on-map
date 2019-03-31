@@ -34,6 +34,6 @@ define([], function() {
 			}
 
 			return matched.map(MAP_TO_INT);
-		}
+		},
 	};
 });

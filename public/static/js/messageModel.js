@@ -1,6 +1,6 @@
 "use strict";
 
-define([ "knockout", "exports" ], function(ko, exports) {
+define(["knockout", "exports"], function(ko, exports) {
 	const TYPE_WARN = "warn";
 	const TYPE_ERROR = "error";
 

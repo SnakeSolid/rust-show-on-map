@@ -1,6 +1,6 @@
 "use strict";
 
-define([ "knockout", "localStorage" ], function(ko, storage) {
+define(["knockout", "localStorage"], function(ko, storage) {
 	return function(params) {
 		const self = this;
 
@@ -63,7 +63,7 @@ define([ "knockout", "localStorage" ], function(ko, storage) {
 				self.isHostValid(true);
 			}
 
-			if (port.length === 0 || !port.match( /^[0-9]+$/ )) {
+			if (port.length === 0 || !port.match(/^[0-9]+$/)) {
 				self.isPortValid(false);
 
 				result = false;

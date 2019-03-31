@@ -9,29 +9,27 @@
         <div class="fields">
           <div class="six wide required field" data-bind="css: { error: isHostInvalid }">
             <label>Host Name</label>
-            <input name="host" placeholder="Host Name or IP Address" type="text" data-bind="value: host">
+            <input name="host" placeholder="Host Name or IP Address" type="text" data-bind="value: host" />
           </div>
 
           <div class="four wide required field" data-bind="css: { error: isPortInvalid }">
-            <label>Port</label>
-            <input name="port" placeholder="Port Number" type="text" data-bind="value: port">
+            <label>Port</label> <input name="port" placeholder="Port Number" type="text" data-bind="value: port" />
           </div>
 
           <div class="six wide required field" data-bind="css: { error: isDatabaseInvalid }">
             <label>Database name</label>
-            <input name="database" placeholder="Database Name" type="text" data-bind="value: database">
+            <input name="database" placeholder="Database Name" type="text" data-bind="value: database" />
           </div>
         </div>
 
         <div class="fields">
           <div class="eight wide required field" data-bind="css: { error: isRoleInvalid }">
-            <label>Role Name</label>
-            <input name="host" placeholder="Role Name" type="text" data-bind="value: role">
+            <label>Role Name</label> <input name="host" placeholder="Role Name" type="text" data-bind="value: role" />
           </div>
 
           <div class="eight wide field">
             <label>Password</label>
-            <input name="port" placeholder="Pa$$w0rd" type="password" data-bind="value: password">
+            <input name="port" placeholder="Pa$$w0rd" type="password" data-bind="value: password" />
           </div>
         </div>
 
@@ -60,9 +58,7 @@
                 <i class="plug icon"></i>
               </button>
             </td>
-            <td>
-              <span data-bind="text: host">:<span data-bind="text: port">
-            </td>
+            <td><span data-bind="text: host"></span>:<span data-bind="text: port"></span></td>
             <td data-bind="text: database"></td>
             <td data-bind="text: role"></td>
             <td>

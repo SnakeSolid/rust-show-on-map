@@ -27,13 +27,15 @@ define([], function() {
 
 	const pushRecentConnection = function(settings) {
 		recentConnections = recentConnections.filter(function(item) {
-			return item.host !== settings.host
-				|| item.port !== settings.port
-				|| item.database !== settings.database
-				|| item.role !== settings.role;
+			return (
+				item.host !== settings.host ||
+				item.port !== settings.port ||
+				item.database !== settings.database ||
+				item.role !== settings.role
+			);
 		});
 		recentConnections = recentConnections.slice(0, 9);
-		recentConnections = [ settings ].concat(recentConnections);
+		recentConnections = [settings].concat(recentConnections);
 
 		for (const listener of recentListeners) {
 			listener(recentConnections);
