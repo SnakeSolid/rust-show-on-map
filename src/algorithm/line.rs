@@ -1,12 +1,10 @@
-use std::collections::HashSet;
-
-use database::MapLink;
-use database::MapPoint;
-
 use super::adjacent_links;
 use super::loop_link;
 use super::next_link;
 use super::starting_link;
+use crate::database::MapLink;
+use crate::database::MapPoint;
+use std::collections::HashSet;
 
 pub fn collect_lines(links: &Vec<MapLink>) -> Vec<Vec<MapPoint>> {
     let mut used_links = HashSet::default();
@@ -111,10 +109,9 @@ pub fn collect_lines(links: &Vec<MapLink>) -> Vec<Vec<MapPoint>> {
 
 #[cfg(test)]
 mod test {
-    use database::MapLink;
-    use database::MapPoint;
-
     use super::collect_lines;
+    use crate::database::MapLink;
+    use crate::database::MapPoint;
 
     fn bounded_with(link: &Vec<MapPoint>, a: &MapPoint, b: &MapPoint) -> bool {
         match (link.first(), link.last()) {
@@ -132,18 +129,20 @@ mod test {
         let mut found = false;
 
         for actual_link in actual_links {
-            if expected_link.iter().zip(actual_link.iter()).all(
-                |(expected_point, actual_point)| expected_point == actual_point,
-            )
+            if expected_link
+                .iter()
+                .zip(actual_link.iter())
+                .all(|(expected_point, actual_point)| expected_point == actual_point)
             {
                 found = true;
 
                 break;
             }
 
-            if expected_link.iter().zip(actual_link.iter().rev()).all(
-                |(expected_point, actual_point)| expected_point == actual_point,
-            )
+            if expected_link
+                .iter()
+                .zip(actual_link.iter().rev())
+                .all(|(expected_point, actual_point)| expected_point == actual_point)
             {
                 found = true;
 
@@ -390,8 +389,8 @@ mod test {
         let link_1 = vec![point_1.clone(), point_2.clone()];
         let link_2;
 
-        if bounded_with(&result[0], &point_2, &point_2) ||
-            bounded_with(&result[1], &point_2, &point_2)
+        if bounded_with(&result[0], &point_2, &point_2)
+            || bounded_with(&result[1], &point_2, &point_2)
         {
             link_2 = vec![
                 point_2.clone(),
@@ -399,8 +398,8 @@ mod test {
                 point_4.clone(),
                 point_2.clone(),
             ];
-        } else if bounded_with(&result[0], &point_3, &point_3) ||
-                   bounded_with(&result[1], &point_3, &point_3)
+        } else if bounded_with(&result[0], &point_3, &point_3)
+            || bounded_with(&result[1], &point_3, &point_3)
         {
             link_2 = vec![
                 point_3.clone(),
@@ -408,8 +407,8 @@ mod test {
                 point_2.clone(),
                 point_3.clone(),
             ];
-        } else if bounded_with(&result[0], &point_4, &point_4) ||
-                   bounded_with(&result[1], &point_4, &point_4)
+        } else if bounded_with(&result[0], &point_4, &point_4)
+            || bounded_with(&result[1], &point_4, &point_4)
         {
             link_2 = vec![
                 point_4.clone(),

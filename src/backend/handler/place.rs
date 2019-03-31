@@ -1,19 +1,16 @@
-use std::fmt::Display;
-use std::io::Read;
-
+use crate::algorithm::collect_polygon;
+use crate::database::DatabaseFactory;
+use crate::database::MapPlace;
+use crate::database::MapPoint;
+use iron::mime::Mime;
+use iron::status;
 use iron::Handler;
 use iron::IronResult;
-use iron::mime::Mime;
 use iron::Request;
 use iron::Response;
-use iron::status;
 use serde_json;
-
-use algorithm::collect_polygon;
-
-use database::DatabaseFactory;
-use database::MapPlace;
-use database::MapPoint;
+use std::fmt::Display;
+use std::io::Read;
 
 pub struct PlaceHandler {
     factory: DatabaseFactory,
@@ -183,13 +180,12 @@ impl Into<ResponsePlace> for MapPlace {
     fn into(self) -> ResponsePlace {
         let id = self.id();
         let name = self.name().clone();
-        let polygons = self.polygons()
+        let polygons = self
+            .polygons()
             .iter()
             .map(|polygon| collect_polygon(polygon.links()))
             .filter_map(|links| links)
-            .map(|links| {
-                links.into_iter().map(|point| point.into()).collect()
-            })
+            .map(|links| links.into_iter().map(|point| point.into()).collect())
             .collect();
 
         ResponsePlace::new(id, name, polygons)

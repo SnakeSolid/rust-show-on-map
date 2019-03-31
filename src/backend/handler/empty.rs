@@ -1,8 +1,8 @@
+use iron::status;
 use iron::Handler;
 use iron::IronResult;
 use iron::Request;
 use iron::Response;
-use iron::status;
 
 pub struct EmptyHandler;
 

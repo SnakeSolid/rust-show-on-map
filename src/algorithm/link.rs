@@ -1,7 +1,6 @@
+use crate::database::MapPoint;
 use std::collections::HashMap;
 use std::collections::HashSet;
-
-use database::MapPoint;
 
 pub fn starting_link(adjacent: &HashMap<MapPoint, HashSet<usize>>) -> Option<(&MapPoint, usize)> {
     for (point, links_indexes) in adjacent {

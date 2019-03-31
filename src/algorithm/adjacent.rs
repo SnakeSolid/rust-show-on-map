@@ -1,8 +1,7 @@
+use crate::database::MapLink;
+use crate::database::MapPoint;
 use std::collections::HashMap;
 use std::collections::HashSet;
-
-use database::MapLink;
-use database::MapPoint;
 
 pub fn adjacent_links(
     links: &Vec<MapLink>,
@@ -35,13 +34,11 @@ pub fn adjacent_links(
 
 #[cfg(test)]
 mod test {
+    use super::adjacent_links;
+    use crate::database::MapLink;
+    use crate::database::MapPoint;
     use std::collections::HashSet;
     use std::hash::Hash;
-
-    use database::MapLink;
-    use database::MapPoint;
-
-    use super::adjacent_links;
 
     fn vec_to_set<T>(list: Vec<T>) -> HashSet<T>
     where
@@ -110,9 +107,11 @@ mod test {
         let point_1 = MapPoint::new(100, 100);
         let point_2 = MapPoint::new(200, 100);
         let point_3 = MapPoint::new(300, 100);
-        let links = vec![
-            MapLink::new(vec![point_1.clone(), point_2.clone(), point_3.clone()]),
-        ];
+        let links = vec![MapLink::new(vec![
+            point_1.clone(),
+            point_2.clone(),
+            point_3.clone(),
+        ])];
         let result = adjacent_links(&links, &vec_to_set(vec![]));
 
         assert_eq!(result.len(), 2);

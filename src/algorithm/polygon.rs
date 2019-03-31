@@ -1,11 +1,9 @@
-use std::collections::HashSet;
-
-use database::MapLink;
-use database::MapPoint;
-
 use super::adjacent_links;
 use super::loop_link;
 use super::next_link;
+use crate::database::MapLink;
+use crate::database::MapPoint;
+use std::collections::HashSet;
 
 pub fn collect_polygon(links: &Vec<MapLink>) -> Option<Vec<MapPoint>> {
     if links.len() < 2 {
@@ -70,10 +68,9 @@ pub fn collect_polygon(links: &Vec<MapLink>) -> Option<Vec<MapPoint>> {
 
 #[cfg(test)]
 mod test {
-    use database::MapLink;
-    use database::MapPoint;
-
     use super::collect_polygon;
+    use crate::database::MapLink;
+    use crate::database::MapPoint;
 
     fn bounded_with(link: &Vec<MapPoint>, a: &MapPoint, b: &MapPoint) -> bool {
         match (link.first(), link.last()) {
@@ -84,12 +81,14 @@ mod test {
     }
 
     fn assert_link(actual_link: &Vec<MapPoint>, expected_link: &Vec<MapPoint>) {
-        let found_fwd = expected_link.iter().zip(actual_link.iter()).all(
-            |(expected_point, actual_point)| expected_point == actual_point,
-        );
-        let found_rev = expected_link.iter().zip(actual_link.iter().rev()).all(
-            |(expected_point, actual_point)| expected_point == actual_point,
-        );
+        let found_fwd = expected_link
+            .iter()
+            .zip(actual_link.iter())
+            .all(|(expected_point, actual_point)| expected_point == actual_point);
+        let found_rev = expected_link
+            .iter()
+            .zip(actual_link.iter().rev())
+            .all(|(expected_point, actual_point)| expected_point == actual_point);
 
         assert!(found_fwd || found_rev);
     }

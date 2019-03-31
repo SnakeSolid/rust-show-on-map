@@ -30,16 +30,22 @@ impl From<PgError> for DatabaseError {
 
             DatabaseError::PostgresError { description }
         } else if let Some(error) = error.as_io() {
-            DatabaseError::PostgresError { description: error.description().into() }
+            DatabaseError::PostgresError {
+                description: error.description().into(),
+            }
         } else {
-            DatabaseError::PostgresError { description: format!("{}", error) }
+            DatabaseError::PostgresError {
+                description: format!("{}", error),
+            }
         }
     }
 }
 
 impl From<IoError> for DatabaseError {
     fn from(error: IoError) -> DatabaseError {
-        DatabaseError::IoError { description: format!("{}", error) }
+        DatabaseError::IoError {
+            description: format!("{}", error),
+        }
     }
 }
 

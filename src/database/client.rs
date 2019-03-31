@@ -1,7 +1,7 @@
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::fmt::Write;
 use std::sync::Arc;
-use std::collections::HashMap;
 
 use postgres::Connection;
 use postgres::TlsMode;
@@ -32,11 +32,7 @@ impl DatabaseClient {
             config: config,
             url: format!(
                 "postgresql://{3}:{4}@{0}:{1}/{2}",
-                host,
-                port,
-                database,
-                role,
-                password
+                host, port, database, role, password
             ),
         }
     }
@@ -259,9 +255,10 @@ impl DatabaseClient {
             let place_id: i64 = row.get(0);
             let name: String = row.get(1);
 
-            result.entry(place_id).or_insert_with(|| Vec::new()).push(
-                name,
-            );
+            result
+                .entry(place_id)
+                .or_insert_with(|| Vec::new())
+                .push(name);
         }
 
         Ok(result)

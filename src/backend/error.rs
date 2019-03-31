@@ -1,7 +1,7 @@
+use std::error::Error;
 use std::fmt::Display;
 use std::fmt::Error as FmtError;
 use std::fmt::Formatter;
-use std::error::Error;
 
 use iron::error::HttpError;
 
@@ -28,6 +28,8 @@ impl Error for BackendError {
 
 impl From<HttpError> for BackendError {
     fn from(error: HttpError) -> BackendError {
-        BackendError::IronError { description: error.description().into() }
+        BackendError::IronError {
+            description: error.description().into(),
+        }
     }
 }

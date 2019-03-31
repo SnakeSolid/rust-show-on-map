@@ -1,19 +1,16 @@
-use std::fmt::Display;
-use std::io::Read;
-
+use crate::algorithm::collect_lines;
+use crate::database::DatabaseFactory;
+use crate::database::MapPoint;
+use crate::database::MapRoad;
+use iron::mime::Mime;
+use iron::status;
 use iron::Handler;
 use iron::IronResult;
-use iron::mime::Mime;
 use iron::Request;
 use iron::Response;
-use iron::status;
 use serde_json;
-
-use algorithm::collect_lines;
-
-use database::DatabaseFactory;
-use database::MapPoint;
-use database::MapRoad;
+use std::fmt::Display;
+use std::io::Read;
 
 pub struct RoadHandler {
     factory: DatabaseFactory,

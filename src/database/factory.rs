@@ -10,7 +10,9 @@ pub struct DatabaseFactory {
 
 impl DatabaseFactory {
     pub fn new(config: DatabaseConfig) -> DatabaseFactory {
-        DatabaseFactory { config: Arc::new(config) }
+        DatabaseFactory {
+            config: Arc::new(config),
+        }
     }
 
     pub fn client(

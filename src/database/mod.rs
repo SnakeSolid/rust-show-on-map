@@ -6,6 +6,7 @@ mod factory;
 
 pub use self::client::DatabaseClient;
 pub use self::config::DatabaseConfig;
+pub use self::config::ReadConfigError;
 pub use self::entity::MapLink;
 pub use self::entity::MapPlace;
 pub use self::entity::MapPoint;

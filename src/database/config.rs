@@ -28,13 +28,17 @@ pub enum ReadConfigError {
 
 impl From<IoError> for ReadConfigError {
     fn from(error: IoError) -> ReadConfigError {
-        ReadConfigError::IoError { description: error.description().into() }
+        ReadConfigError::IoError {
+            description: error.description().into(),
+        }
     }
 }
 
 impl From<TomlError> for ReadConfigError {
     fn from(error: TomlError) -> ReadConfigError {
-        ReadConfigError::TomlError { description: error.description().into() }
+        ReadConfigError::TomlError {
+            description: error.description().into(),
+        }
     }
 }
 

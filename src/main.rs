@@ -1,42 +1,29 @@
 #[macro_use]
 extern crate log;
-
 #[macro_use]
 extern crate serde_derive;
-
-extern crate argparse;
-extern crate env_logger;
-extern crate iron;
-extern crate mount;
-extern crate postgres;
-extern crate router;
-extern crate serde_json;
-extern crate staticfile;
-extern crate time;
-extern crate toml;
 
 mod algorithm;
 mod backend;
 mod database;
-mod logger;
+mod error;
 mod settings;
 
-use backend::start_backend;
-use database::DatabaseFactory;
-use database::DatabaseConfig;
-use logger::UnwrapLog;
-use settings::Settings;
+use crate::backend::start_backend;
+use crate::database::DatabaseConfig;
+use crate::database::DatabaseFactory;
+use crate::error::ApplicationError;
+use crate::error::ApplicationResult;
+use crate::settings::Settings;
 
-fn main() {
-    if let Err(err) = logger::init() {
-        panic!("Failed to initialize logger: {}", err);
-    }
+fn main() -> ApplicationResult {
+    env_logger::init();
 
     let settings = Settings::from_args();
-    let config =
-        DatabaseConfig::read(settings.config_path()).unwrap_log("Can't read configuration");
+    let config = DatabaseConfig::read(settings.config_path())
+        .map_err(ApplicationError::read_config_error)?;
     let factory = DatabaseFactory::new(config);
 
     start_backend(factory, &settings.bind_address(), settings.bind_port())
-        .unwrap_log("Can't start back-end server");
+        .map_err(ApplicationError::backend_error)
 }
