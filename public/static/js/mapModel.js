@@ -6,8 +6,7 @@ define(["knockout", "exports", "messageModel"], function(ko, exports, message) {
 
 		this.selectionHandler = selectionHandler;
 		this.isTilesVisible = ko.observable(true);
-		this.deferred_add_places = ko.observableArray();
-		this.deferred_add_roads = ko.observableArray();
+		this.deferred_add = ko.observableArray();
 		this.clear = ko.observable(false);
 
 		this.onSelected = function(event) {
@@ -20,28 +19,8 @@ define(["knockout", "exports", "messageModel"], function(ko, exports, message) {
 			self.isTilesVisible(!self.isTilesVisible());
 		};
 
-		this.showPlaces = function(places, messageCallback) {
-			places.forEach(function(place) {
-				if (place.polygons === null || place.polygons.length === 0) {
-					const text = "Place " + place.name + " (" + place.id + ") has no polygons.";
-
-					messageCallback(message.error(text));
-				} else {
-					self.deferred_add_places.push(place);
-				}
-			});
-		};
-
-		this.showRoads = function(roads, messageCallback) {
-			roads.forEach(function(road) {
-				if (road.lines === null || road.lines.length === 0) {
-					const text = "Road " + road.names.join(", ") + " (" + road.id + ") has no lines.";
-
-					messageCallback(message.error(text));
-				} else {
-					self.deferred_add_roads.push(road);
-				}
-			});
+		this.showObjects = function(objects, messageCallback) {
+			self.deferred_add(objects);
 		};
 
 		this.clearShapes = function() {

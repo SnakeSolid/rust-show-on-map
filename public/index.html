@@ -39,17 +39,16 @@
             <i class="plug icon"></i> Connection&hellip;
           </a>
 
-          <a class="item" data-bind="click: showPlaces, css: { active: isPlacesVisible, disabled: isPlacesDisabled }">
-            <i class="building outline icon"></i> Show places&hellip;
-          </a>
-
-          <a class="item" data-bind="click: showRoads, css: { active: isRoadsVisible, disabled: isRoadsDisabled }">
-            <i class="road icon"></i> Show roads&hellip;
+          <a
+            class="item"
+            data-bind="click: showObjects, css: { active: isObjectsVisible, disabled: isObjectsDisabled }"
+          >
+            <i class="building outline icon"></i> Show objects&hellip;
           </a>
 
           <div class="right menu">
             <a class="item" data-bind="click: clearShapes, css: { disabled: isClearDisabled }">
-              <i class="remove icon"></i> Clear all shapes
+              <i class="remove icon"></i> Clear map
             </a>
           </div>
         </div>
@@ -59,14 +58,10 @@
         params="saveCallback: hideConnection, closeCallback: hideConnection"
         data-bind="visible: isConnectionVisible"
       ></ko-connection-settings>
-      <ko-places
-        params="showCallback: showPlacesCallback, closeCallback: hidePlaces, messageCallback: pushMessage"
-        data-bind="visible: isPlacesVisible"
-      ></ko-places>
-      <ko-roads
-        params="showCallback: showRoadsCallback, closeCallback: hideRoads, messageCallback: pushMessage"
-        data-bind="visible: isRoadsVisible"
-      ></ko-roads>
+      <ko-objects
+        params="showCallback: showObjectsCallback, closeCallback: hideObjects, messageCallback: pushMessage"
+        data-bind="visible: isObjectsVisible"
+      ></ko-objects>
       <ko-selected-names params="names: features"></ko-selected-names>
       <ko-messages params="messages: messages, clearCallback: clearMessages"></ko-messages>
     </div>

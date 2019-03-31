@@ -1,22 +1,17 @@
-use super::error::BackendError;
-use super::handler::EmptyHandler;
-use super::handler::PlaceHandler;
-use super::handler::RoadHandler;
-use crate::database::DatabaseFactory;
+use super::EmptyHandler;
+use super::FormatHandler;
+use super::ObjectHandler;
+use crate::config::ConfigRef;
 use iron::Iron;
 use mount::Mount;
 use router::Router;
 use staticfile::Static;
 
-pub fn start_backend(
-    factory: DatabaseFactory,
-    bind_address: &str,
-    bind_port: u16,
-) -> Result<(), BackendError> {
+pub fn start_backend(config: ConfigRef, address: &str, port: u16) {
     let mut router = Router::new();
     router
-        .post("/place", PlaceHandler::new(factory.clone()), "place")
-        .post("/road", RoadHandler::new(factory), "road")
+        .post("/format", FormatHandler::new(config.clone()), "format")
+        .post("/object", ObjectHandler::new(config.clone()), "object")
         .get("/", EmptyHandler::new(), "empty");
 
     let mut mount = Mount::new();
@@ -25,9 +20,10 @@ pub fn start_backend(
         .mount("/static", Static::new("public/static"))
         .mount("/", Static::new("public/index.html"));
 
-    println!("Starting WEB server {}:{}", bind_address, bind_port);
+    println!("Starting HTTP server on {}:{}", address, port);
 
-    Iron::new(mount).http((bind_address, bind_port))?;
-
-    Ok(())
+    match Iron::new(mount).http((address, port)) {
+        Ok(_) => {}
+        Err(err) => error!("Failed to start HTTP server: {}", err),
+    }
 }

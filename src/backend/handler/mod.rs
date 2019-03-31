@@ -1,10 +1,8 @@
-#[macro_use]
+mod empty;
+mod format;
+mod object;
 mod util;
 
-mod empty;
-mod place;
-mod road;
-
 pub use self::empty::EmptyHandler;
-pub use self::place::PlaceHandler;
-pub use self::road::RoadHandler;
+pub use self::format::FormatHandler;
+pub use self::object::ObjectHandler;

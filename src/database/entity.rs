@@ -1,115 +1,146 @@
 #[derive(Debug, Clone)]
-pub struct MapPlace {
-    id: i64,
-    name: String,
-    polygons: Vec<MapPolygon>,
-}
-
-#[derive(Debug, Clone)]
-pub struct MapRoad {
-    id: i64,
+pub struct NamesGeometry {
     names: Vec<String>,
-    links: Vec<MapLink>,
+    geometry: Geometry,
 }
 
-#[derive(Debug, Clone)]
-pub struct MapPolygon {
-    links: Vec<MapLink>,
-}
-
-#[derive(Debug, Clone)]
-pub struct MapLink {
-    points: Vec<MapPoint>,
-}
-
-#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
-pub struct MapPoint {
-    lat: i32,
-    lon: i32,
-}
-
-impl MapPlace {
-    pub fn with_name(id: i64, name: String) -> MapPlace {
-        MapPlace {
-            id: id,
-            name: name,
-            polygons: Vec::default(),
-        }
-    }
-
-    pub fn with_name_geometry(id: i64, name: String, polygons: Vec<MapPolygon>) -> MapPlace {
-        MapPlace { id, name, polygons }
-    }
-
-    pub fn id(&self) -> i64 {
-        self.id
-    }
-
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn polygons(&self) -> &Vec<MapPolygon> {
-        &self.polygons
-    }
-}
-
-impl MapRoad {
-    pub fn with_names(id: i64, names: Vec<String>) -> MapRoad {
-        MapRoad {
-            id: id,
-            names: names,
-            links: Vec::default(),
-        }
-    }
-
-    pub fn with_names_geometry(id: i64, names: Vec<String>, links: Vec<MapLink>) -> MapRoad {
-        MapRoad { id, names, links }
-    }
-
-    pub fn id(&self) -> i64 {
-        self.id
-    }
-
-    pub fn names(&self) -> &Vec<String> {
+impl NamesGeometry {
+    pub fn names(&self) -> &[String] {
         &self.names
     }
 
-    pub fn links(&self) -> &Vec<MapLink> {
-        &self.links
+    pub fn geometry(&self) -> &Geometry {
+        &self.geometry
     }
 }
 
-impl MapPolygon {
-    pub fn new(links: Vec<MapLink>) -> MapPolygon {
-        MapPolygon { links }
-    }
-
-    pub fn links(&self) -> &Vec<MapLink> {
-        &self.links
+impl From<(Vec<String>, Geometry)> for NamesGeometry {
+    fn from(names_geometry: (Vec<String>, Geometry)) -> Self {
+        NamesGeometry {
+            names: names_geometry.0,
+            geometry: names_geometry.1,
+        }
     }
 }
 
-impl MapLink {
-    pub fn new(points: Vec<MapPoint>) -> MapLink {
-        MapLink { points }
+#[derive(Debug, Clone)]
+pub struct Point {
+    lat: f32,
+    lon: f32,
+}
+
+impl Point {
+    pub fn new(lat: f32, lon: f32) -> Point {
+        Point { lat, lon }
     }
 
-    pub fn points(&self) -> &Vec<MapPoint> {
+    pub fn lat(&self) -> f32 {
+        self.lat
+    }
+
+    pub fn lon(&self) -> f32 {
+        self.lon
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Line {
+    points: Vec<Point>,
+}
+
+impl Line {
+    pub fn new(points: &[Point]) -> Line {
+        Line {
+            points: points.into(),
+        }
+    }
+
+    pub fn points(&self) -> &[Point] {
         &self.points
     }
 }
 
-impl MapPoint {
-    pub fn new(lat: i32, lon: i32) -> MapPoint {
-        MapPoint { lat, lon }
+impl From<Vec<Point>> for Line {
+    fn from(points: Vec<Point>) -> Self {
+        Line { points }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MultiLine {
+    lines: Vec<Line>,
+}
+
+impl MultiLine {
+    pub fn new(lines: &[Line]) -> MultiLine {
+        MultiLine {
+            lines: lines.into(),
+        }
     }
 
-    pub fn lat(&self) -> i32 {
-        self.lat
+    pub fn lines(&self) -> &[Line] {
+        &self.lines
+    }
+}
+
+impl From<Vec<Vec<Point>>> for MultiLine {
+    fn from(lines: Vec<Vec<Point>>) -> Self {
+        MultiLine {
+            lines: lines.into_iter().map(|line| line.into()).collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Polygon {
+    points: Vec<Point>,
+}
+
+impl Polygon {
+    pub fn new(points: &[Point]) -> Polygon {
+        Polygon {
+            points: points.into(),
+        }
     }
 
-    pub fn lon(&self) -> i32 {
-        self.lon
+    pub fn points(&self) -> &[Point] {
+        &self.points
     }
+}
+
+impl From<Vec<Point>> for Polygon {
+    fn from(points: Vec<Point>) -> Self {
+        Polygon { points }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MultiPolygon {
+    polygons: Vec<Polygon>,
+}
+
+impl MultiPolygon {
+    pub fn new(polygons: &[Polygon]) -> MultiPolygon {
+        MultiPolygon {
+            polygons: polygons.into(),
+        }
+    }
+
+    pub fn polygons(&self) -> &[Polygon] {
+        &self.polygons
+    }
+}
+
+impl From<Vec<Vec<Point>>> for MultiPolygon {
+    fn from(polygons: Vec<Vec<Point>>) -> Self {
+        MultiPolygon {
+            polygons: polygons.into_iter().map(|line| line.into()).collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum Geometry {
+    MultiLine(MultiLine),
+    MultiPolygon(MultiPolygon),
 }

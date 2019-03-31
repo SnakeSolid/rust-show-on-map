@@ -7,35 +7,36 @@ define(["knockout", "reqwest", "messageModel", "localStorage", "integerParser"],
 	storage,
 	parser
 ) {
-	return function(params) {
+	const Objects = function(params) {
 		const self = this;
 
 		this.showCallback = params.showCallback;
 		this.closeCallback = params.closeCallback;
 		this.messageCallback = params.messageCallback;
 
-		this.places = ko.observable("");
-		this.areUnique = ko.observable(false);
-		this.isPlacesValid = ko.observable(true);
+		this.objects = ko.observable("");
+		this.availableFormats = ko.observableArray();
+		this.selectedFormat = ko.observable();
+		this.isObjectsValid = ko.observable(true);
 		this.isLoading = ko.observable(false);
 
-		this.isPlacesInvalid = ko.pureComputed(function() {
-			return !this.isPlacesValid();
+		this.isObjectsInvalid = ko.pureComputed(function() {
+			return !this.isObjectsValid();
 		}, this);
 
 		this.validate = function() {
-			const valid = parser.validate(self.places());
+			const valid = parser.validate(self.objects());
 
-			self.isPlacesValid(valid);
+			self.isObjectsValid(valid);
 
 			return valid;
 		};
 
 		this.processResponce = function(responce, expectedIds) {
-			if (responce.ok) {
+			if (responce.success) {
 				const actualIds = {};
 
-				for (const place of responce.places) {
+				for (const place of responce.result) {
 					const id = place.id;
 
 					actualIds[id] = true;
@@ -47,7 +48,7 @@ define(["knockout", "reqwest", "messageModel", "localStorage", "integerParser"],
 					}
 				}
 
-				self.showCallback(responce.places);
+				self.showCallback(responce.result);
 				self.closeCallback();
 			} else {
 				this.messageCallback(message.error(responce.message, "Error occurred"));
@@ -65,19 +66,19 @@ define(["knockout", "reqwest", "messageModel", "localStorage", "integerParser"],
 			const connection = storage.getConnectionSettings();
 
 			if (connection && self.validate()) {
-				const ids = parser.parse(self.places());
+				const ids = parser.parse(self.objects());
 				const data = {
 					host: connection.host,
 					port: connection.port,
 					database: connection.database,
 					role: connection.role,
 					password: connection.password,
+					format: self.selectedFormat(),
 					ids: ids,
-					unique: self.areUnique(),
 				};
 
 				reqwest({
-					url: "/api/v1/place",
+					url: "/api/v1/object",
 					method: "post",
 					data: JSON.stringify(data),
 					type: "json",
@@ -97,8 +98,26 @@ define(["knockout", "reqwest", "messageModel", "localStorage", "integerParser"],
 		};
 
 		this.clear = function() {
-			self.places("");
-			self.areUnique(false);
+			self.objects("");
 		};
+
+		this.loadAvailableFormats();
 	};
+
+	Objects.prototype.loadAvailableFormats = function() {
+		reqwest({
+			url: "/api/v1/format",
+			method: "post",
+			type: "json",
+			contentType: "application/json",
+		})
+			.then(
+				function(responce) {
+					this.availableFormats(responce.result);
+				}.bind(this)
+			)
+			.fail(this.processFail.bind(this));
+	};
+
+	return Objects;
 });

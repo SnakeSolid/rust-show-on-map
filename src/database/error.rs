@@ -7,6 +7,8 @@ use std::io::Error as IoError;
 
 use postgres::Error as PgError;
 
+pub type DatabaseResult<T> = Result<T, DatabaseError>;
+
 #[derive(Debug)]
 pub enum DatabaseError {
     PostgresError { description: String },

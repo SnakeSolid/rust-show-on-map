@@ -55,16 +55,16 @@ impl Settings {
         config
     }
 
-    pub fn bind_address(&self) -> String {
-        self.bind_address.clone()
+    pub fn bind_address(&self) -> &str {
+        &self.bind_address
     }
 
     pub fn bind_port(&self) -> u16 {
         self.bind_port
     }
 
-    pub fn config_path(&self) -> String {
-        self.config_path.clone()
+    pub fn config_path(&self) -> &str {
+        &self.config_path
     }
 }
 

@@ -82,8 +82,7 @@ define(["knockout", "openLayers"], function(ko, ol) {
 			const value = valueAccessor();
 			const valueUnwrapped = ko.unwrap(value);
 			const tileVisible = valueUnwrapped.isTilesVisible();
-			const places = valueUnwrapped.deferred_add_places();
-			const roads = valueUnwrapped.deferred_add_roads();
+			const objects = valueUnwrapped.deferred_add();
 			const clear = valueUnwrapped.clear();
 			const map = valueUnwrapped._map;
 			const vector = valueUnwrapped._vector;
@@ -97,18 +96,27 @@ define(["knockout", "openLayers"], function(ko, ol) {
 				valueUnwrapped.clear(false);
 			}
 
-			if (places.length > 0) {
+			if (objects.length > 0) {
 				const features = [];
 
-				for (const place of places) {
-					const name = place.name + " (" + place.id + ")";
-					const allCoordinates = [];
+				for (const mapObject of objects) {
+					const name = mapObject.names.join(", ") + " (" + mapObject.id + ")";
+					let geometry;
 
-					place.polygons.forEach(function(polygon) {
-						allCoordinates.push([polygon.map(pointToCoordinate)]);
-					});
+					if (mapObject.type === "MultiLineString") {
+						const allCoordinates = mapObject.lines.map(function(line) {
+							return line.map(pointToCoordinate);
+						});
 
-					const geometry = new ol.geom.MultiPolygon(allCoordinates, "XY");
+						geometry = new ol.geom.MultiLineString(allCoordinates, "XY");
+					} else if (mapObject.type === "MultiPolygon") {
+						const allCoordinates = mapObject.polygons.map(function(polygon) {
+							return [polygon.map(pointToCoordinate)];
+						});
+
+						geometry = new ol.geom.MultiPolygon(allCoordinates, "XY");
+					}
+
 					const feature = new ol.Feature({ geometry, name });
 
 					feature.set(KIND, KIND_PLACE);
@@ -116,29 +124,7 @@ define(["knockout", "openLayers"], function(ko, ol) {
 				}
 
 				vector.addFeatures(features);
-				valueUnwrapped.deferred_add_places([]);
-			}
-
-			if (roads.length > 0) {
-				const features = [];
-
-				for (const road of roads) {
-					const name = road.names.sort().join(", ") + " (" + road.id + ")";
-					const allCoordinates = [];
-
-					road.lines.forEach(function(line) {
-						allCoordinates.push(line.map(pointToCoordinate));
-					});
-
-					const geometry = new ol.geom.MultiLineString(allCoordinates, "XY");
-					const feature = new ol.Feature({ geometry, name });
-
-					feature.set(KIND, KIND_ROAD);
-					features.push(feature);
-				}
-
-				vector.addFeatures(features);
-				valueUnwrapped.deferred_add_roads([]);
+				valueUnwrapped.deferred_add([]);
 			}
 
 			if (vector.getFeatures().length > 0) {
