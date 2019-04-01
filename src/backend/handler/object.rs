@@ -5,6 +5,7 @@ use crate::database::DatabaseClient;
 use crate::database::Geometry;
 use crate::database::MultiLine;
 use crate::database::MultiPolygon;
+use crate::database::Point;
 use iron::Handler;
 use iron::IronResult;
 use iron::Request as IronRequest;
@@ -75,15 +76,7 @@ fn collect_lines(multi_line: &MultiLine) -> Vec<Vec<ResponsePoint>> {
     multi_line
         .lines()
         .iter()
-        .map(|line| {
-            line.points()
-                .iter()
-                .map(|point| ResponsePoint {
-                    lat: point.lat(),
-                    lon: point.lon(),
-                })
-                .collect()
-        })
+        .map(|line| collect_points(line.points()))
         .collect()
 }
 
@@ -91,16 +84,41 @@ fn collect_polygons(multi_polygon: &MultiPolygon) -> Vec<Vec<ResponsePoint>> {
     multi_polygon
         .polygons()
         .iter()
-        .map(|line| {
-            line.points()
-                .iter()
-                .map(|point| ResponsePoint {
+        .map(|polygon| collect_points(polygon.points()))
+        .collect()
+}
+
+const EPSILON: f32 = 0.000001;
+
+fn collect_points(points: &[Point]) -> Vec<ResponsePoint> {
+    let mut it = points.iter();
+    let mut result = Vec::new();
+
+    if let Some(point) = it.next() {
+        let mut last_lat = point.lat();
+        let mut last_lon = point.lon();
+
+        result.push(ResponsePoint {
+            lat: point.lat(),
+            lon: point.lon(),
+        });
+
+        for point in it {
+            let delta = (point.lat() - last_lat).abs() + (point.lon() - last_lon).abs();
+
+            if delta > EPSILON {
+                last_lat = point.lat();
+                last_lon = point.lon();
+
+                result.push(ResponsePoint {
                     lat: point.lat(),
                     lon: point.lon(),
-                })
-                .collect()
-        })
-        .collect()
+                });
+            }
+        }
+    }
+
+    result
 }
 
 #[derive(Deserialize)]
