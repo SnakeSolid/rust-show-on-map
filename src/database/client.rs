@@ -203,8 +203,8 @@ impl<'a> DatabaseClient<'a> {
                         let object_polygons =
                             object_polygons.entry(id).or_insert_with(Vec::default);
 
-                        for line in &polygons.0[0].0 {
-                            object_polygons.push(wkt_line_to_points(&line.0));
+                        for polygon in &polygons.0 {
+                            object_polygons.push(wkt_line_to_points(&polygon.0[0].0));
                         }
                     }
                     _ => {
