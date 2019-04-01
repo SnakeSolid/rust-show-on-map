@@ -9,6 +9,9 @@ use postgres::Connection;
 use postgres::TlsMode;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use wkt::types::Coord as WktCoord;
+use wkt::Geometry as WktGeometry;
+use wkt::Wkt;
 
 pub struct DatabaseClient<'a> {
     format: &'a FormatConfig,
@@ -163,8 +166,73 @@ impl<'a> DatabaseClient<'a> {
     fn get_geometry_wkt(
         &self,
         connection: &Connection,
-        ids: &[i64],
+        ids: &Vec<i64>,
     ) -> DatabaseResult<HashMap<i64, Geometry>> {
-        unimplemented!("Read geometry from WKT not implemented yet.")
+        let query = self.format.geometry_query();
+        let rows = connection.query(query, &[ids])?;
+        let mut object_lines: HashMap<_, Vec<_>> = HashMap::default();
+        let mut object_polygons: HashMap<_, Vec<_>> = HashMap::default();
+
+        for row in rows.into_iter() {
+            let id: i64 = row.get(0);
+            let geometry_text: String = row.get(1);
+            let wkt = Wkt::from_str(&geometry_text).unwrap();
+
+            for geometry in wkt.items {
+                match geometry {
+                    WktGeometry::LineString(line) => {
+                        object_lines
+                            .entry(id)
+                            .or_insert_with(Vec::default)
+                            .push(wkt_line_to_points(&line.0));
+                    }
+                    WktGeometry::MultiLineString(lines) => {
+                        let object_lines = object_lines.entry(id).or_insert_with(Vec::default);
+
+                        for line in lines.0 {
+                            object_lines.push(wkt_line_to_points(&line.0));
+                        }
+                    }
+                    WktGeometry::Polygon(polygon) => {
+                        let object_polygons =
+                            object_polygons.entry(id).or_insert_with(Vec::default);
+
+                        object_polygons.push(wkt_line_to_points(&polygon.0[0].0));
+                    }
+                    WktGeometry::MultiPolygon(polygons) => {
+                        let object_polygons =
+                            object_polygons.entry(id).or_insert_with(Vec::default);
+
+                        for line in &polygons.0[0].0 {
+                            object_polygons.push(wkt_line_to_points(&line.0));
+                        }
+                    }
+                    _ => {
+                        return Err(DatabaseError::unsupported_format(format_args!(
+                            "{}",
+                            geometry
+                        )));
+                    }
+                }
+            }
+        }
+
+        let mut result = HashMap::new();
+
+        for (id, lines) in object_lines {
+            result.insert(id, Geometry::MultiLine(lines.into()));
+        }
+
+        for (id, polygons) in object_polygons {
+            result.insert(id, Geometry::MultiPolygon(polygons.into()));
+        }
+
+        Ok(result)
     }
+}
+
+fn wkt_line_to_points(line: &Vec<WktCoord>) -> Vec<Point> {
+    line.iter()
+        .map(|coord| Point::new(coord.y as f32, coord.x as f32))
+        .collect()
 }
