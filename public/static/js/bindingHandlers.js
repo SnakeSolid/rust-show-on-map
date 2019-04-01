@@ -1,33 +1,7 @@
 "use strict";
 
 define(["knockout", "openLayers"], function(ko, ol) {
-	const KIND = "kind";
-	const KIND_PLACE = "place";
-	const KIND_ROAD = "road";
-	const STROKE_PLACE = new ol.style.Stroke({ color: [0, 128, 255], width: 2 });
-	const STROKE_ROAD = new ol.style.Stroke({ color: [255, 0, 0], width: 3 });
-	const STROKE_DEFAULT = new ol.style.Stroke({ color: [0, 0, 0], width: 2 });
-	const FILL_PLACE = new ol.style.Fill({ color: [0, 128, 255, 0.1] });
-	const FILL_DEFAULT = new ol.style.Fill({ color: [0, 0, 0, 0.1] });
-	const STYLE_PLACE = new ol.style.Style({ stroke: STROKE_PLACE, fill: FILL_PLACE });
-	const STYLE_ROAD = new ol.style.Style({ stroke: STROKE_ROAD });
-	const STYLE_DEFAULT = new ol.style.Style({ stroke: STROKE_DEFAULT, fill: FILL_DEFAULT });
-
-	const pointToCoordinate = function(point) {
-		return ol.proj.transform([point.lon, point.lat], "EPSG:4326", "EPSG:3857");
-	};
-
-	const getFeatureStyle = function(feature) {
-		const kind = feature.get(KIND);
-
-		if (kind === KIND_PLACE) {
-			return STYLE_PLACE;
-		} else if (kind === KIND_ROAD) {
-			return STYLE_ROAD;
-		} else {
-			return STYLE_DEFAULT;
-		}
-	};
+	const KEY_INDEX = "index";
 
 	const createToggleControl = function(callback) {
 		const button = document.createElement("button");
@@ -43,98 +17,162 @@ define(["knockout", "openLayers"], function(ko, ol) {
 		return new ol.control.Control({ element: element });
 	};
 
+	const OpenLayersMap = function(element, params) {
+		this.objectFeatures = {};
+		this.objectStyles = {};
+
+		params.mapObjects.subscribe(this.updateGeometry.bind(this));
+
+		// Initialize layers - background - OSM, foreground - vector
+		const sourceOsm = new ol.source.OSM();
+		const layerTile = new ol.layer.Tile({ source: sourceOsm });
+		const sourceVector = new ol.source.Vector({ wrapX: false });
+		const layerVector = new ol.layer.Vector({
+			source: sourceVector,
+			style: this.getFeatureStyle.bind(this),
+		});
+
+		// Create control buttons: zoom, attribution and toggle map
+		const controls = ol.control
+			.defaults({
+				attribution: true,
+				zoom: true,
+			})
+			.extend([new ol.control.ScaleLine(), createToggleControl(this.toggleTiles.bind(this))]);
+
+		// Create default view
+		const view = new ol.View({
+			center: [-2000000.0, 5000000.0],
+			zoom: 4,
+		});
+
+		// Create map
+		const map = new ol.Map({
+			controls: controls,
+			layers: [layerTile, layerVector],
+			target: element,
+			view: view,
+		});
+
+		// Add callback handler for object selection.
+		const interactSelect = new ol.interaction.Select();
+		interactSelect.on("select", params.selectionCallback);
+		map.addInteraction(interactSelect);
+
+		this.tileLayer = layerTile;
+		this.sourceVector = sourceVector;
+		this.map = map;
+	};
+
+	OpenLayersMap.prototype.updateGeometry = function(mapObjects) {
+		// Add new map objects
+		for (const index in mapObjects) {
+			if (index in this.objectFeatures && index in this.objectStyles) {
+				continue;
+			}
+
+			const mapObject = mapObjects[index];
+			const name = mapObject.names.join(", ") + " (" + mapObject.id + ")";
+			let geometry;
+			let style;
+
+			if (mapObject.type === "MultiLineString") {
+				const points = mapObject.lines.map(this.lineToCoordinate.bind(this));
+
+				geometry = new ol.geom.MultiLineString(points, "XY");
+				style = this.getLineStyle();
+			} else if (mapObject.type === "MultiPolygon") {
+				const points = mapObject.polygons.map(this.polygonToCoordinate.bind(this));
+
+				geometry = new ol.geom.MultiPolygon(points, "XY");
+				style = this.getPolygonStyle();
+			}
+
+			const feature = new ol.Feature({ geometry, name });
+			feature.set(KEY_INDEX, index);
+
+			this.objectFeatures[index] = feature;
+			this.objectStyles[index] = style;
+			this.sourceVector.addFeature(feature);
+		}
+
+		// Remove unused map objects
+		for (const index in this.objectFeatures) {
+			if (!(index in mapObjects)) {
+				const feature = this.objectFeatures[index];
+
+				this.sourceVector.removeFeature(feature);
+				delete this.objectFeatures[index];
+				delete this.objectStyles[index];
+			}
+		}
+
+		// Zoom to fit all features if features present on the map
+		if (this.sourceVector.getFeatures().length > 0) {
+			const extent = this.sourceVector.getExtent();
+			const view = this.map.getView();
+
+			view.fit(extent, {
+				padding: [30, 20, 30, 20],
+			});
+		}
+	};
+
+	// Polygons represents places
+	OpenLayersMap.prototype.getPolygonStyle = function() {
+		const color_r = 0 + Math.floor(64.0 * Math.random());
+		const color_g = 128 + Math.floor(64.0 - 128.0 * Math.random());
+		const color_b = 255 - Math.floor(64.0 * Math.random());
+		const stroke = new ol.style.Stroke({ color: [color_r, color_g, color_b], width: 1 });
+		const fill = new ol.style.Fill({ color: [color_r, color_g, color_b, 0.1] });
+
+		return new ol.style.Style({ stroke: stroke, fill: fill });
+	};
+
+	// Lines represents roads and links
+	OpenLayersMap.prototype.getLineStyle = function() {
+		const color_r = 255 - Math.floor(64.0 * Math.random());
+		const color_g = 128 + Math.floor(64.0 - 128.0 * Math.random());
+		const color_b = 0 + Math.floor(64.0 * Math.random());
+		const stroke = new ol.style.Stroke({ color: [color_r, color_g, color_b], width: 2 });
+
+		return new ol.style.Style({ stroke: stroke });
+	};
+
+	OpenLayersMap.prototype.toggleTiles = function(feature) {
+		const tileVisible = !this.tileLayer.getVisible();
+
+		this.tileLayer.setVisible(tileVisible);
+	};
+
+	OpenLayersMap.prototype.getFeatureStyle = function(feature) {
+		const id = feature.get(KEY_INDEX);
+
+		return this.objectStyles[id];
+	};
+
+	// Project polygon from latitude/longitude to WEB Mercator.
+	OpenLayersMap.prototype.polygonToCoordinate = function(polygon) {
+		return [polygon.map(this.pointToCoordinate)];
+	};
+
+	// Project line from latitude/longitude to WEB Mercator.
+	OpenLayersMap.prototype.lineToCoordinate = function(line) {
+		return line.map(this.pointToCoordinate);
+	};
+
+	// Project single point from latitude/longitude to WEB Mercator.
+	OpenLayersMap.prototype.pointToCoordinate = function(point) {
+		return ol.proj.transform([point.lon, point.lat], "EPSG:4326", "EPSG:3857");
+	};
+
 	// OpenLayers binding
 	ko.bindingHandlers.asMap = {
 		init: function(element, valueAccessor, allBindings, _, bindingContext) {
 			const value = valueAccessor();
 			const valueUnwrapped = ko.unwrap(value);
-			const onSelected = valueUnwrapped.onSelected;
-			const sourceOsm = new ol.source.OSM();
-			const layerTile = new ol.layer.Tile({ source: sourceOsm });
-			const sourceVector = new ol.source.Vector({ wrapX: false });
-			const layerVector = new ol.layer.Vector({ source: sourceVector, style: getFeatureStyle });
-			const interactSelect = new ol.interaction.Select();
-			const controls = ol.control
-				.defaults({
-					attribution: true,
-					zoom: true,
-				})
-				.extend([new ol.control.ScaleLine(), createToggleControl(valueUnwrapped.tilesToggleCallback)]);
-			const view = new ol.View({
-				center: [-2000000.0, 5000000.0],
-				zoom: 4,
-			});
-			const map = new ol.Map({
-				controls: controls,
-				layers: [layerTile, layerVector],
-				target: element,
-				view: view,
-			});
 
-			interactSelect.on("select", onSelected);
-			map.addInteraction(interactSelect);
-
-			valueUnwrapped._tileLayer = layerTile;
-			valueUnwrapped._vector = sourceVector;
-			valueUnwrapped._map = map;
-		},
-		update: function(element, valueAccessor, allBindings) {
-			const value = valueAccessor();
-			const valueUnwrapped = ko.unwrap(value);
-			const tileVisible = valueUnwrapped.isTilesVisible();
-			const objects = valueUnwrapped.deferred_add();
-			const clear = valueUnwrapped.clear();
-			const map = valueUnwrapped._map;
-			const vector = valueUnwrapped._vector;
-
-			if (valueUnwrapped._tileLayer.getVisible() !== tileVisible) {
-				valueUnwrapped._tileLayer.setVisible(tileVisible);
-			}
-
-			if (clear) {
-				vector.clear();
-				valueUnwrapped.clear(false);
-			}
-
-			if (objects.length > 0) {
-				const features = [];
-
-				for (const mapObject of objects) {
-					const name = mapObject.names.join(", ") + " (" + mapObject.id + ")";
-					let geometry;
-
-					if (mapObject.type === "MultiLineString") {
-						const allCoordinates = mapObject.lines.map(function(line) {
-							return line.map(pointToCoordinate);
-						});
-
-						geometry = new ol.geom.MultiLineString(allCoordinates, "XY");
-					} else if (mapObject.type === "MultiPolygon") {
-						const allCoordinates = mapObject.polygons.map(function(polygon) {
-							return [polygon.map(pointToCoordinate)];
-						});
-
-						geometry = new ol.geom.MultiPolygon(allCoordinates, "XY");
-					}
-
-					const feature = new ol.Feature({ geometry, name });
-
-					feature.set(KIND, KIND_PLACE);
-					features.push(feature);
-				}
-
-				vector.addFeatures(features);
-				valueUnwrapped.deferred_add([]);
-			}
-
-			if (vector.getFeatures().length > 0) {
-				const extent = vector.getExtent();
-				const view = map.getView();
-
-				view.fit(extent, {
-					padding: [30, 20, 30, 20],
-				});
-			}
+			valueUnwrapped._map = new OpenLayersMap(element, valueUnwrapped);
 		},
 	};
 });

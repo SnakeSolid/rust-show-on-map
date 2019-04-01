@@ -1,17 +1,17 @@
 "use strict";
 
 define(["knockout", "exports", "messageModel"], function(ko, exports, message) {
-	const MapModel = function(selectionHandler) {
+	const MapModel = function(selectionCallback) {
 		const self = this;
 
-		this.selectionHandler = selectionHandler;
+		this.selectionCallback = selectionCallback;
 		this.isTilesVisible = ko.observable(true);
-		this.deferred_add = ko.observableArray();
-		this.clear = ko.observable(false);
+		this.mapObjects = ko.observableArray();
 
 		this.onSelected = function(event) {
-			if (self.selectionHandler !== null) {
-				self.selectionHandler(event.selected);
+			// TODO: fix selection
+			if (self.selectionCallback !== null) {
+				self.selectionCallback(event.selected);
 			}
 		};
 
@@ -19,16 +19,18 @@ define(["knockout", "exports", "messageModel"], function(ko, exports, message) {
 			self.isTilesVisible(!self.isTilesVisible());
 		};
 
-		this.showObjects = function(objects, messageCallback) {
-			self.deferred_add(objects);
-		};
-
 		this.clearShapes = function() {
-			self.clear(true);
+			self.mapObjects([]);
 		};
 	};
 
-	exports.create = function(selectionHandler) {
-		return new MapModel(selectionHandler);
+	MapModel.prototype.showObjects = function(mapObjects, messageCallback) {
+		for (const mapObject of mapObjects) {
+			this.mapObjects.push(mapObject);
+		}
+	};
+
+	exports.create = function(selectionCallback) {
+		return new MapModel(selectionCallback);
 	};
 });
