@@ -17,6 +17,21 @@ define(["knockout", "openLayers"], function(ko, ol) {
 		return new ol.control.Control({ element: element });
 	};
 
+	const createSelectInteration = function(map, callback) {
+		const interactSelect = new ol.interaction.Select();
+		interactSelect.on("select", function(event) {
+			const selectedFeatures = interactSelect.getFeatures();
+			const selectedArray = selectedFeatures.getArray();
+			const selectedIds = selectedArray.map(function(feature) {
+				return feature.get(KEY_INDEX);
+			});
+
+			callback(selectedIds);
+		});
+
+		map.addInteraction(interactSelect);
+	};
+
 	const OpenLayersMap = function(element, params) {
 		this.objectFeatures = {};
 		this.objectStyles = {};
@@ -55,9 +70,9 @@ define(["knockout", "openLayers"], function(ko, ol) {
 		});
 
 		// Add callback handler for object selection.
-		const interactSelect = new ol.interaction.Select();
-		interactSelect.on("select", params.selectionCallback);
-		map.addInteraction(interactSelect);
+		if (params.selectionCallback) {
+			createSelectInteration(map, params.selectionCallback);
+		}
 
 		this.tileLayer = layerTile;
 		this.sourceVector = sourceVector;

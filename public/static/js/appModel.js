@@ -18,7 +18,7 @@ define(["knockout", "localStorage", "messageModel", "mapModel"], function(ko, st
 
 		this.featuresSelected = function(features) {
 			const featureNames = features.map(function(feature) {
-				return feature.get("name");
+				return feature.names.join(", ") + " (" + feature.id + ")";
 			});
 
 			self.features(featureNames);
