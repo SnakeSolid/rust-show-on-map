@@ -1,16 +1,16 @@
 <div class="ui grid">
-  <div class="four wide column"></div>
-  <div class="eight wide column">
+  <div class="three wide column"></div>
+  <div class="ten wide column">
     <div class="ui raised blue segment">
       <form class="ui form" data-bind="css: { loading: isLoading }">
-        <h3 class="ui header">Show Object by ID</h3>
+        <h3 class="ui header">Show Objects</h3>
 
         <div class="required field" data-bind="css: { error: isObjectsInvalid }">
           <label>Object IDs (separated with whitespace, commas or semicolons)</label>
-          <textarea tabindex="0" rows="2" data-bind="value: objects"></textarea>
+          <textarea tabindex="0" rows="5" data-bind="value: objects"></textarea>
         </div>
 
-        <div class="inline field">
+        <div class="field">
           <label for="selectedFormat">Format:</label>
 
           <select
@@ -21,11 +21,13 @@
           ></select>
         </div>
 
-        <button class="ui primary button" type="submit" data-bind="click: show">Show</button>
-        <button class="ui button" type="button" data-bind="click: clear">Clear</button>
-        <button class="ui button" type="button" data-bind="click: hide">Close</button>
+        <div class="ui fluid buttons">
+          <button class="ui primary button" type="submit" data-bind="click: show">Show</button>
+          <button class="ui button" type="button" data-bind="click: clear">Clear</button>
+          <button class="ui button" type="button" data-bind="click: hide">Close</button>
+        </div>
       </form>
     </div>
   </div>
-  <div class="four wide column"></div>
+  <div class="three wide column"></div>
 </div>

@@ -44,7 +44,7 @@ define(["knockout", "reqwest", "messageModel", "localStorage", "integerParser"],
 
 				for (const id of expectedIds) {
 					if (!(id in actualIds)) {
-						self.messageCallback(message.warn("Place with id " + id + " was not found."));
+						self.messageCallback(message.warn("Object with id " + id + " was not found."));
 					}
 				}
 
