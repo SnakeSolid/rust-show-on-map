@@ -33,7 +33,7 @@ impl Settings {
             ap.refer(&mut config_path).add_option(
                 &["-c", "--config"],
                 StoreOption,
-                "Path to configuration file (default: config.toml)",
+                "Path to configuration file (default: config.yaml)",
             );
             ap.parse_args_or_exit();
         }
@@ -73,7 +73,7 @@ impl Default for Settings {
         Settings {
             bind_address: "localhost".into(),
             bind_port: 8080,
-            config_path: "config.toml".into(),
+            config_path: "config.yaml".into(),
         }
     }
 }
