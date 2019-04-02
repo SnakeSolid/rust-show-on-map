@@ -1,0 +1,56 @@
+formats:
+  "Example lines":
+    format_type: PlainLines
+    names_query: |
+      select distinct
+        rn.road_id::bigint as id,
+        rn.name as name
+      from road as rn
+      where road_id::bigint = any( $1 ) ;
+    geometry_query: |
+      select
+        links.road_id::bigint as id,
+        links.link_id::bigint as line,
+        (points.lat / 100000.0)::real as latitude,
+        (points.lon / 100000.0)::real as longitude
+      from road_link as links
+        inner join link_points as points on ( points.link_id = links.link_id )
+      where links.road_id::bigint = any( $1 )
+      order by links.road_id, links.link_id, points.seq_num ;
+
+  "Example polygons":
+    format_type: PlainPolygons
+    names_query: |
+      select distinct
+        fn.feature_id::bigint as id,
+        fn.name as name
+      from feature_name as nn using ( name_id )
+      where fn.feature_id::bigint = any( $1 ) ;
+    geometry_query: |
+      select
+        feature.feature_id::bigint as id,
+        face.face_id::bigint as polygon_id,
+        (points.lat / 100000.0)::real as latitude,
+        (points.lon / 100000.0)::real as longitude
+      from feature as feature
+        inner join feature_face as face on ( face.feature_id = feature.feature_id )
+        inner join face_link as link on ( link.face_id = face.face_id )
+        inner join link_points as points on ( points.link_id = link.link_id )
+      where feature.feature_id::bigint = any( $1 )
+      order by face.face_id, link.seq_num, points.seq_num ;
+
+  "Example WKT":
+    format_type: Wkt
+    names_query: |
+      select distinct
+        ll.link_id::bigint as id,
+        ll.name as name
+      from road_link as ll
+      where ll.link_id::bigint = any( $1 ) ;
+    geometry_query: |
+      select
+        rl.link_id::bigint as id,
+        st_astext(st_force2d(fg.geometry)) as geometry
+      from road_link as rl
+        inner join link_geometry as fg using ( link_id )
+      where rl.link_id::bigint = any( $1 ) ;

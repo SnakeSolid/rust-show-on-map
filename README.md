@@ -11,10 +11,10 @@ To build `show-on-map` from source code use following command:
 cargo build --release
 ```
 
-To start `show-on-map` with configuration file `example.toml` listening on `localhost:8080` use following command:
+To start `show-on-map` with configuration file `example.yaml` listening on `localhost:8080` use following command:
 
 ```sh
-./target/release/show-on-map -c example.toml
+./target/release/show-on-map -c example.yaml
 ```
 
 WEB server will be available on [localhost](http://localhost:8080/).
@@ -26,92 +26,125 @@ WEB server will be available on [localhost](http://localhost:8080/).
 * `-b HOST` (`--bind HOST`), optional - address to bind WEB server on. Default value: `localhost`;
 * `-p PORT` (`--port PORT`), optional - port to listen for WEB server. Default value: `8080`;
 * `-c FILE` (`--config FILE`), optional - path to configuration file. Detailed information about configuration file
-	content see in [configuration] section. Default value: `config.toml`.
+	content see in [configuration] section. Default value: `config.yaml`.
 
 ## Configuration
 [configuration]: #configuration
 
-Configuration file must be written in `toml` format. Configuration file six main parameters representing every query:
+Configuration file must be written in `yaml` format. Configuration file has single section - `formats`. This section
+contains map format name to format settings. Names can be any unique string.
 
-* `points_for_places` - contains query to get polygons for places. Query must return five fields: `place_id::bigint`,
-	`polygon_id::integer`, `link_id::integer`, `latitude::integer` and `longitude::integer`. Coordinates within single
-	link must be ordered;
-* `points_for_roads` - contains query to get line for roads. Query must return five fields: `road_id::bigint`,
-	`link_id::integer`, `latitude::integer` and `longitude::integer`. Coordinates within single	link must be ordered;
-* `unique_place_ids` - contains query to get place ids by unique ids. Query must return two fields: `place_id::bigint`,
-	`unique_id::integer`;
-* `unique_road_ids` - contains query to get road ids by unique ids. Query must return two fields: `road_id::bigint` and
-	`unique_id::integer`;
-* `names_for_places` - contains query to get names for places. Query must return two fields: `place_id::bigint` and
-	`name::string`. If query returns several names for single place only last name will be used as place name;
-* `names_for_roads` - contains query to get names for places. Query must return two fields: `road_id::bigint` and
-	`name::string`. If query returns several names for single road all names will be collected to single list.
+Format settings contains three required fields:
 
-Every query must contain place holder `{ids}`. This placeholder will be replaces with actual place or road ids in
-runtime before query execution. All map coordinates must be represented as point in Mercator projection multiplied
-by 10_000.
+* `format_type` - Type of geometry query result set for this format. Following types are available: `PlainLines`,
+`PlainPolygons` and `Wkt`;
+* `names_query` - SQL query. This query must return result set with two fields - bigint, varchar. First field will be
+used as object identifier and must match with identifiers in query form. Second field represents as name. Single object
+can have different names;
+* `geometry_query` - SQL query. Query must returns object points or WKT string depending on chosen format (see format
+description below);
 
-For all queries it's important to order all fields in order from query description.
+All queries must have single parameter (`$1`). This parameter will represent array of object identifiers with `bigint`
+type (PostgreSQL type `bigint[]`). Common usage is to add where clause `where object_id::bigint = any( $1 )` to select
+only required object.
+
+## PlainLines
+
+Geometry query must contain lines and points (latitude and longitude). Single object must contain at least one line.
+Every line must contain at least two points. Line with one point are useless, it can't be shown.
+
+Query result set must contains following fields:
+
+* `bigint` - Object identifier;
+* `bigint` - Line identifier. This value used only to find points related to the line;
+* `real` - Latitude of a point;
+* `real` - Longitude of a point.
+
+## PlainPolygons
+
+Geometry query must contain polygons and points (latitude and longitude). Single object must contain at least one
+polygon. Every polygon must contain at least three points. Polygon with one or two point are useless, it can't be
+shown.
+
+Query result set must contains following fields:
+
+* `bigint` - Object identifier;
+* `bigint` - Polygon identifier. This value used only to find points related to the polygon;
+* `real` - Latitude of a point;
+* `real` - Longitude of a point.
+
+## Wkt
+
+Geometry query must contain line and point (latitude and longitude). Single object must contain at least one line.
+Every line must contain at least two points. Line with one point are useless, it can't be shown.
+
+Query result set must contains following fields:
+
+* `bigint` - Object identifier;
+* `varchar` - Object geometry in [WKT](http://www.opengeospatial.org/standards/sfa) format. WKT value can be received
+from [PostGIS](https://postgis.net/)'s `geometry` type using [ST_AsText](https://postgis.net/docs/ST_AsText.html)
+function.
 
 ## Configuration file example
 [config-example]: #config-example
 
-```toml
-points_for_places = """
-SELECT
-  places.place_id::bigint AS place_id,
-  places.face_id AS polygon_id,
-  places.link_id AS link_id,
-  places.lat AS lat,
-  places.lon AS lon
-FROM map.places AS places
-WHERE places.place_id IN ( {ids} )
-ORDER by places.place_id, places.face_id, places.seq_num ;
-"""
+```yaml
+formats:
+  "Example lines":
+    format_type: PlainLines
+    names_query: |
+      select distinct
+        rn.road_id::bigint as id,
+        rn.name as name
+      from road as rn
+      where road_id::bigint = any( $1 ) ;
+    geometry_query: |
+      select
+        links.road_id::bigint as id,
+        links.link_id::bigint as line,
+        (points.lat / 100000.0)::real as latitude,
+        (points.lon / 100000.0)::real as longitude
+      from road_link as links
+        inner join link_points as points on ( points.link_id = links.link_id )
+      where links.road_id::bigint = any( $1 )
+      order by links.road_id, links.link_id, points.seq_num ;
 
-points_for_roads = """
-SELECT
-  roads.road_id AS road_id,
-  roads.link_id::integer AS link_id,
-  roads.lat AS lat,
-  roads.lon AS lon
-FROM map.roads AS roads
-ORDER BY roads.road_id, roads.link_id, roads.seq_num ;
-"""
+  "Example polygons":
+    format_type: PlainPolygons
+    names_query: |
+      select distinct
+        fn.feature_id::bigint as id,
+        fn.name as name
+      from feature_name as nn using ( name_id )
+      where fn.feature_id::bigint = any( $1 ) ;
+    geometry_query: |
+      select
+        feature.feature_id::bigint as id,
+        polygon.polygon_id::bigint as polygon_id,
+        (points.lat / 100000.0)::real as latitude,
+        (points.lon / 100000.0)::real as longitude
+      from feature as feature
+        inner join feature_polygon as polygon on ( polygon.feature_id = feature.feature_id )
+        inner join polygon_link as link on ( link.polygon_id = polygon.polygon_id )
+        inner join link_points as points on ( points.link_id = link.link_id )
+      where feature.feature_id::bigint = any( $1 )
+      order by polygon.face_id, link.seq_num, points.seq_num ;
 
-unique_place_ids = """
-SELECT
-  obj.object_id AS place_id,
-  obj.unique_id AS unique_id
-FROM map.objects AS obj
-WHERE obj.unique_id IN ( {ids} ) ;
-"""
-
-unique_road_ids = """
-SELECT
-  obj.object_id AS road_id,
-  obj.unique_id AS unique_id
-FROM map.objects AS obj
-WHERE obj.unique_id IN ( {ids} ) ;
-"""
-
-names_for_places = """
-SELECT
-  names.place_id::bigint AS place_id,
-  names.name AS name
-FROM map.place_names AS names
-WHERE names.place_id IN ( {ids} )
-ORDER BY names.place_id, names.is_exonym = 'N' ;
-"""
-
-names_for_roads = """
-SELECT
-  names.road_id AS road_id,
-  names.name AS name
-FROM map.road_name AS names
-WHERE names.road_id IN ( {ids} )
-ORDER BY names.road_id, names.name ;
-"""
+  "Example WKT":
+    format_type: Wkt
+    names_query: |
+      select distinct
+        ll.link_id::bigint as id,
+        ll.name as name
+      from road_link as ll
+      where ll.link_id::bigint = any( $1 ) ;
+    geometry_query: |
+      select
+        rl.link_id::bigint as id,
+        st_astext(st_force2d(fg.geometry)) as geometry
+      from road_link as rl
+        inner join link_geometry as fg using ( link_id )
+      where rl.link_id::bigint = any( $1 ) ;
 ```
 
 ## License
